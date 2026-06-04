@@ -8,7 +8,7 @@ from app.schemas.trip import TripCreate, TripResponse
 
 router = APIRouter()
 
-SECRET_KEY = "samriddha-footwear-secret-key"
+SECRET_KEY = "trip-summary-secret-key"
 ALGORITHM = "HS256"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
