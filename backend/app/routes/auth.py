@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 router = APIRouter()
 
-SECRET_KEY = "samriddha-footwear-secret-key"
+SECRET_KEY = "trip-summary-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -57,3 +57,14 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise HTTPException(status_code=401, detail="Invalid username or password")
     access_token = create_access_token(data={"sub": form_data.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.put("/change-password")
+def change_password(username: str, old_password: str, new_password: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if not verify_password(old_password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Old password is incorrect")
+    user.hashed_password = hash_password(new_password)
+    db.commit()
+    return {"message": "Password changed successfully"}
