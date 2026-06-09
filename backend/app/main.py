@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.models import trip, user, customer, vendor, product, fee_tax, configuration
-from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents
+from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings
 from app.services.scheduler import start_scheduler, stop_scheduler
 
 Base.metadata.create_all(bind=engine)
@@ -24,6 +24,7 @@ app.include_router(fees_taxes.router)
 app.include_router(products.router)
 app.include_router(configurations.router)
 app.include_router(documents.router)
+app.include_router(email_settings.router)
 
 @app.on_event("startup")
 def startup_event():
