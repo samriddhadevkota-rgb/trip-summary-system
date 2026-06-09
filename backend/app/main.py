@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.models import trip, user
-from app.routes import trips
-from app.routes import auth
+from app.models import trip, user, customer, vendor, product, fee_tax, configuration
+from app.routes import trips, auth, customers, vendors, fees_taxes, products
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,6 +17,10 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(trips.router)
+app.include_router(customers.router)
+app.include_router(vendors.router)
+app.include_router(fees_taxes.router)
+app.include_router(products.router)
 
 @app.get("/")
 async def root():
