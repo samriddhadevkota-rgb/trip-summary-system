@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #333;
+      margin: 40px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #4f46e5;
+      padding-bottom: 20px;
+    }
+
+    .logo img {
+      height: 60px;
+    }
+
+    .logo-placeholder {
+      font-size: 22px;
+      font-weight: bold;
+      color: #4f46e5;
+    }
+
+    .title-block {
+      text-align: right;
+    }
+
+    .title-block h1 {
+      font-size: 28px;
+      color: #4f46e5;
+      margin: 0;
+    }
+
+    .title-block p {
+      margin: 3px 0;
+      color: #666;
+    }
+
+    .info-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .info-block h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #999;
+      margin: 0 0 5px 0;
+    }
+
+    .info-block p {
+      margin: 2px 0;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    thead tr {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f5f5ff;
+    }
+
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #4f46e5;
+      margin: 20px 0 8px 0;
+      border-left: 4px solid #4f46e5;
+      padding-left: 8px;
+    }
+
+    .totals-table {
+      width: 300px;
+      margin-left: auto;
+    }
+
+    .totals-table td {
+      padding: 6px 12px;
+    }
+
+    .totals-table tr.grand-total {
+      background-color: #4f46e5;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .text-right { text-align: right; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      {% if show_logo and logo_path %}
+        <img src="{{ logo_path }}" alt="Logo">
+      {% else %}
+        <div class="logo-placeholder">Trip Summary System</div>
+      {% endif %}
+    </div>
+    <div class="title-block">
+      <h1>PRODUCT INVOICE</h1>
+      <p><strong>Invoice #:</strong> {{ invoice_number }}</p>
+      <p><strong>Invoice Date:</strong> {{ invoice_date }}</p>
+      {% if show_due_date %}
+      <p><strong>Due Date:</strong> {{ due_date }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- INFO GRID -->
+  <div class="info-grid">
+    {% if show_customer_name %}
+    <div class="info-block">
+      <h3>Bill To</h3>
+      <p><strong>{{ customer.name }}</strong></p>
+      <p>{{ customer.billing_address }}</p>
+      <p>{{ customer.email }}</p>
+    </div>
+    {% endif %}
+
+    {% if show_ship_to %}
+    <div class="info-block">
+      <h3>Ship To</h3>
+      <p><strong>{{ shipto.name }}</strong></p>
+      <p>{{ shipto.address }}</p>
+    </div>
+    {% endif %}
+
+    {% if show_delivery_date %}
+    <div class="info-block">
+      <h3>Delivery Date</h3>
+      <p>{{ delivery_date }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="section-title">Products</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Rate</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in products %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>${{ "%.2f"|format(item.rate) }}</td>
+        <td class="text-right">${{ "%.2f"|format(item.total) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- FEES -->
+  {% if show_fees and fees %}
+  <div class="section-title">Fees</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Fee</th>
+        <th>Quantity</th>
+        <th>Rate</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fee in fees %}
+      <tr>
+        <td>{{ fee.name }}</td>
+        <td>{{ fee.quantity }}</td>
+        <td>${{ "%.2f"|format(fee.rate) }}</td>
+        <td class="text-right">${{ "%.2f"|format(fee.total) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- TAXES -->
+  {% if show_taxes and taxes %}
+  <div class="section-title">Taxes</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Tax</th>
+        <th>Percentage</th>
+        <th class="text-right">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tax in taxes %}
+      <tr>
+        <td>{{ tax.name }}</td>
+        <td>{{ tax.percentage }}%</td>
+        <td class="text-right">${{ "%.2f"|format(tax.amount) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- TOTALS -->
+  <table class="totals-table">
+    <tr>
+      <td>Subtotal</td>
+      <td class="text-right">${{ "%.2f"|format(subtotal) }}</td>
+    </tr>
+    {% if show_fees %}
+    <tr>
+      <td>Total Fees</td>
+      <td class="text-right">${{ "%.2f"|format(total_fees) }}</td>
+    </tr>
+    {% endif %}
+    {% if show_taxes %}
+    <tr>
+      <td>Total Tax</td>
+      <td class="text-right">${{ "%.2f"|format(total_tax) }}</td>
+    </tr>
+    {% endif %}
+    <tr class="grand-total">
+      <td>Grand Total</td>
+      <td class="text-right">${{ "%.2f"|format(grand_total) }}</td>
+    </tr>
+  </table>
+
+</body>
+</html>

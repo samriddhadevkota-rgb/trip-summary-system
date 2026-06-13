@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #333;
+      margin: 40px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #d97706;
+      padding-bottom: 20px;
+    }
+
+    .logo img { height: 60px; }
+
+    .logo-placeholder {
+      font-size: 22px;
+      font-weight: bold;
+      color: #d97706;
+    }
+
+    .title-block { text-align: right; }
+
+    .title-block h1 {
+      font-size: 28px;
+      color: #d97706;
+      margin: 0;
+    }
+
+    .title-block p { margin: 3px 0; color: #666; }
+
+    .info-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .info-block h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #999;
+      margin: 0 0 5px 0;
+    }
+
+    .info-block p { margin: 2px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    thead tr {
+      background-color: #d97706;
+      color: white;
+    }
+
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    tbody tr:nth-child(even) { background-color: #fffbeb; }
+
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #d97706;
+      margin: 20px 0 8px 0;
+      border-left: 4px solid #d97706;
+      padding-left: 8px;
+    }
+
+    .totals-table {
+      width: 300px;
+      margin-left: auto;
+    }
+
+    .totals-table td { padding: 6px 12px; }
+
+    .totals-table tr.grand-total {
+      background-color: #d97706;
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .text-right { text-align: right; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      {% if show_logo and logo_path %}
+        <img src="{{ logo_path }}" alt="Logo">
+      {% else %}
+        <div class="logo-placeholder">Trip Summary System</div>
+      {% endif %}
+    </div>
+    <div class="title-block">
+      <h1>FREIGHT INVOICE</h1>
+      <p><strong>Invoice #:</strong> {{ invoice_number }}</p>
+      <p><strong>Invoice Date:</strong> {{ invoice_date }}</p>
+      <p><strong>Due Date:</strong> {{ due_date }}</p>
+    </div>
+  </div>
+
+  <!-- VENDOR INFO -->
+  <div class="info-grid">
+    <div class="info-block">
+      <h3>Vendor</h3>
+      <p><strong>{{ vendor.name }}</strong></p>
+      {% if show_vendor_address %}
+      <p>{{ vendor.address }}</p>
+      <p>{{ vendor.email }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- FREIGHT CHARGES -->
+  <div class="section-title">Freight Charges</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Quantity</th>
+        <th>Freight Rate</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in categories %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>${{ "%.4f"|format(item.freight_rate) }}</td>
+        <td class="text-right">${{ "%.2f"|format(item.total) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- FEES -->
+  {% if fees %}
+  <div class="section-title">Fees</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Fee</th>
+        <th>Quantity</th>
+        <th>Rate</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fee in fees %}
+      <tr>
+        <td>{{ fee.name }}</td>
+        <td>{{ fee.quantity }}</td>
+        <td>${{ "%.2f"|format(fee.rate) }}</td>
+        <td class="text-right">${{ "%.2f"|format(fee.total) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- TOTALS -->
+  <table class="totals-table">
+    <tr>
+      <td>Subtotal</td>
+      <td class="text-right">${{ "%.2f"|format(subtotal) }}</td>
+    </tr>
+    <tr>
+      <td>Total Fees</td>
+      <td class="text-right">${{ "%.2f"|format(total_fees) }}</td>
+    </tr>
+    <tr class="grand-total">
+      <td>Grand Total</td>
+      <td class="text-right">${{ "%.2f"|format(grand_total) }}</td>
+    </tr>
+  </table>
+
+</body>
+</html>

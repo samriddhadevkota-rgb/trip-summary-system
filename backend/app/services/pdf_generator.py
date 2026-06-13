@@ -1,216 +1,159 @@
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import inch
+from jinja2 import Environment, FileSystemLoader
+from weasyprint import HTML
 import os
 from datetime import datetime
 
 OUTPUT_DIR = "generated_documents"
 LOGO_PATH = "assets/logo.png"
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-styles = getSampleStyleSheet()
+# Jinja2 environment — loads templates from the templates/ folder
+env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
 
-def _add_logo(elements):
-    if os.path.exists(LOGO_PATH):
-        logo = Image(LOGO_PATH, width=1.5*inch, height=0.6*inch)
-        logo.hAlign = "LEFT"
-        elements.append(logo)
-        elements.append(Spacer(1, 0.1 * inch))
+def _render_pdf(template_name, context, output_path):
+    """Render a Jinja2 HTML template and convert it to PDF using WeasyPrint."""
+    template = env.get_template(template_name)
+    html_string = template.render(**context)
+    HTML(string=html_string, base_url=os.path.abspath(".")).write_pdf(output_path)
+    return output_path
 
 
 def generate_invoice_pdf(config, invoice_number, db=None, template=None):
     filename = f"{OUTPUT_DIR}/invoice_{invoice_number}.pdf"
-    doc = SimpleDocTemplate(filename, pagesize=letter)
-    elements = []
 
-    show_logo = template.show_logo if template else True
-    show_fees = template.show_fees if template else True
-    show_taxes = template.show_taxes if template else True
-    show_due_date = template.show_due_date if template else True
+    show_logo       = template.show_logo          if template else True
+    show_fees       = template.show_fees          if template else True
+    show_taxes      = template.show_taxes         if template else True
+    show_due_date   = template.show_due_date      if template else True
     show_delivery_date = template.show_delivery_date if template else True
-    show_ship_to = template.show_ship_to if template else True
+    show_customer_name = template.show_customer_name if template else True
+    show_ship_to    = template.show_ship_to       if template else True
 
-    if show_logo:
-        _add_logo(elements)
-
-    elements.append(Paragraph("PRODUCT INVOICE", styles["Title"]))
-    elements.append(Spacer(1, 0.2 * inch))
-    elements.append(Paragraph(f"Invoice Number: {invoice_number}", styles["Normal"]))
-    elements.append(Paragraph(f"Invoice Date: {datetime.now().strftime('%Y-%m-%d')}", styles["Normal"]))
-    if show_due_date:
-        elements.append(Paragraph(f"Due Date: {datetime.now().strftime('%Y-%m-%d')}", styles["Normal"]))
-    elements.append(Paragraph(f"Customer: {config.customer.name}", styles["Normal"]))
-    elements.append(Paragraph(f"Billing Address: {config.customer.billing_address}", styles["Normal"]))
-    if show_ship_to:
-        elements.append(Paragraph(f"Ship To: {config.shipto.name}", styles["Normal"]))
-        elements.append(Paragraph(f"Delivery Address: {config.shipto.address}", styles["Normal"]))
-    if show_delivery_date:
-        elements.append(Paragraph(f"Delivery Date: {datetime.now().strftime('%Y-%m-%d')}", styles["Normal"]))
-    elements.append(Spacer(1, 0.3 * inch))
-
-    elements.append(Paragraph("Products", styles["Heading2"]))
-    product_data = [["Product", "Quantity", "Rate", "Total"]]
+    # Build products list with real names
+    products = []
     subtotal = 0
     for p in config.products:
-        product_name = _get_product_name(db, p["product_id"]) if db else f"Product {p['product_id']}"
+        name  = _get_product_name(db, p["product_id"]) if db else f"Product {p['product_id']}"
         total = p["quantity"] * p["rate"]
         subtotal += total
-        product_data.append([product_name, str(p["quantity"]), f"${p['rate']:.2f}", f"${total:.2f}"])
-    product_table = Table(product_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
-    product_table.setStyle(_table_style())
-    elements.append(product_table)
-    elements.append(Spacer(1, 0.2 * inch))
+        products.append({"name": name, "quantity": p["quantity"], "rate": p["rate"], "total": total})
 
+    # Build fees list
+    fees = []
     total_fees = 0
     if show_fees and config.fees:
-        elements.append(Paragraph("Fees", styles["Heading2"]))
-        fee_data = [["Fee", "Quantity", "Rate", "Total"]]
         for f in config.fees:
-            fee_name = _get_fee_name(db, f["fee_id"]) if db else f"Fee {f['fee_id']}"
+            name  = _get_fee_name(db, f["fee_id"]) if db else f"Fee {f['fee_id']}"
             total = f["quantity"] * f["rate"]
             total_fees += total
-            fee_data.append([fee_name, str(f["quantity"]), f"${f['rate']:.2f}", f"${total:.2f}"])
-        fee_table = Table(fee_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
-        fee_table.setStyle(_table_style())
-        elements.append(fee_table)
-        elements.append(Spacer(1, 0.2 * inch))
+            fees.append({"name": name, "quantity": f["quantity"], "rate": f["rate"], "total": total})
 
+    # Build taxes list
+    taxes = []
     total_tax = 0
     if show_taxes and config.taxes:
-        elements.append(Paragraph("Taxes", styles["Heading2"]))
-        tax_data = [["Tax", "Percentage", "Amount"]]
         for t in config.taxes:
-            tax_info = _get_tax_info(db, t["tax_id"]) if db else {"name": f"Tax {t['tax_id']}", "percentage": t.get("percentage", 0)}
-            tax_amount = subtotal * (tax_info["percentage"] / 100)
-            total_tax += tax_amount
-            tax_data.append([tax_info["name"], f"{tax_info['percentage']}%", f"${tax_amount:.2f}"])
-        tax_table = Table(tax_data, colWidths=[2.5*inch, 2*inch, 2*inch])
-        tax_table.setStyle(_table_style())
-        elements.append(tax_table)
-        elements.append(Spacer(1, 0.2 * inch))
+            info   = _get_tax_info(db, t["tax_id"]) if db else {"name": f"Tax {t['tax_id']}", "percentage": 0}
+            amount = subtotal * (info["percentage"] / 100)
+            total_tax += amount
+            taxes.append({"name": info["name"], "percentage": info["percentage"], "amount": amount})
 
-    grand_total = subtotal + total_fees + total_tax
-    footer_data = [
-        ["Subtotal", f"${subtotal:.2f}"],
-        ["Total Fees", f"${total_fees:.2f}"],
-        ["Total Tax", f"${total_tax:.2f}"],
-        ["Grand Total", f"${grand_total:.2f}"],
-    ]
-    footer_table = Table(footer_data, colWidths=[4*inch, 2*inch])
-    footer_table.setStyle(TableStyle([
-        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-        ("LINEABOVE", (0, -1), (-1, -1), 1, colors.black),
-        ("ALIGN", (1, 0), (1, -1), "RIGHT"),
-    ]))
-    elements.append(footer_table)
-    doc.build(elements)
-    return filename
+    context = {
+        "show_logo":           show_logo,
+        "show_fees":           show_fees,
+        "show_taxes":          show_taxes,
+        "show_due_date":       show_due_date,
+        "show_delivery_date":  show_delivery_date,
+        "show_customer_name":  show_customer_name,
+        "show_ship_to":        show_ship_to,
+        "logo_path":           os.path.abspath(LOGO_PATH) if os.path.exists(LOGO_PATH) else None,
+        "invoice_number":      invoice_number,
+        "invoice_date":        datetime.now().strftime("%Y-%m-%d"),
+        "due_date":            datetime.now().strftime("%Y-%m-%d"),
+        "delivery_date":       datetime.now().strftime("%Y-%m-%d"),
+        "customer":            config.customer,
+        "shipto":              config.shipto,
+        "products":            products,
+        "fees":                fees,
+        "taxes":               taxes,
+        "subtotal":            subtotal,
+        "total_fees":          total_fees,
+        "total_tax":           total_tax,
+        "grand_total":         subtotal + total_fees + total_tax,
+    }
+
+    return _render_pdf("invoice.html", context, filename)
 
 
 def generate_delivery_ticket_pdf(config, delivery_number, db=None, template=None):
     filename = f"{OUTPUT_DIR}/delivery_ticket_{delivery_number}.pdf"
-    doc = SimpleDocTemplate(filename, pagesize=letter)
-    elements = []
 
-    show_logo = template.show_logo if template else True
-    show_delivery_address = template.show_delivery_address if template else True
+    show_logo               = template.show_logo               if template else True
+    show_delivery_address   = template.show_delivery_address   if template else True
     show_delivery_timestamp = template.show_delivery_timestamp if template else True
 
-    if show_logo:
-        _add_logo(elements)
-
-    elements.append(Paragraph("DELIVERY TICKET", styles["Title"]))
-    elements.append(Spacer(1, 0.2 * inch))
-    elements.append(Paragraph(f"Delivery Number: {delivery_number}", styles["Normal"]))
-    elements.append(Paragraph(f"Delivery Date: {datetime.now().strftime('%Y-%m-%d')}", styles["Normal"]))
-    elements.append(Paragraph(f"Customer: {config.customer.name}", styles["Normal"]))
-    if show_delivery_address:
-        elements.append(Paragraph(f"Delivery Location: {config.shipto.name}", styles["Normal"]))
-        elements.append(Paragraph(f"Delivery Address: {config.shipto.address}", styles["Normal"]))
-    elements.append(Spacer(1, 0.3 * inch))
-
-    elements.append(Paragraph("Products", styles["Heading2"]))
-    product_data = [["Product", "Quantity Delivered"]]
+    products = []
     for p in config.products:
-        product_name = _get_product_name(db, p["product_id"]) if db else f"Product {p['product_id']}"
-        product_data.append([product_name, str(p["quantity"])])
-    product_table = Table(product_data, colWidths=[4*inch, 3*inch])
-    product_table.setStyle(_table_style())
-    elements.append(product_table)
+        name = _get_product_name(db, p["product_id"]) if db else f"Product {p['product_id']}"
+        products.append({"name": name, "quantity": p["quantity"]})
 
-    if show_delivery_timestamp:
-        elements.append(Spacer(1, 0.2 * inch))
-        elements.append(Paragraph(f"Delivery Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles["Normal"]))
+    context = {
+        "show_logo":               show_logo,
+        "show_delivery_address":   show_delivery_address,
+        "show_delivery_timestamp": show_delivery_timestamp,
+        "logo_path":               os.path.abspath(LOGO_PATH) if os.path.exists(LOGO_PATH) else None,
+        "delivery_number":         delivery_number,
+        "delivery_date":           datetime.now().strftime("%Y-%m-%d"),
+        "delivery_timestamp":      datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "customer":                config.customer,
+        "shipto":                  config.shipto,
+        "products":                products,
+    }
 
-    doc.build(elements)
-    return filename
+    return _render_pdf("delivery_ticket.html", context, filename)
 
 
 def generate_freight_invoice_pdf(config, invoice_number, db=None, template=None):
     filename = f"{OUTPUT_DIR}/freight_invoice_{invoice_number}.pdf"
-    doc = SimpleDocTemplate(filename, pagesize=letter)
-    elements = []
 
-    show_logo = template.show_logo if template else True
+    show_logo           = template.show_logo           if template else True
     show_vendor_address = template.show_vendor_address if template else True
 
-    if show_logo:
-        _add_logo(elements)
-
-    elements.append(Paragraph("FREIGHT INVOICE", styles["Title"]))
-    elements.append(Spacer(1, 0.2 * inch))
-    elements.append(Paragraph(f"Invoice Number: {invoice_number}", styles["Normal"]))
-    elements.append(Paragraph(f"Invoice Date: {datetime.now().strftime('%Y-%m-%d')}", styles["Normal"]))
-    elements.append(Paragraph(f"Due Date: {datetime.now().strftime('%Y-%m-%d')}", styles["Normal"]))
-    elements.append(Paragraph(f"Vendor: {config.vendor.name}", styles["Normal"]))
-    if show_vendor_address:
-        elements.append(Paragraph(f"Vendor Address: {config.vendor.address}", styles["Normal"]))
-    elements.append(Spacer(1, 0.3 * inch))
-
-    elements.append(Paragraph("Freight Charges", styles["Heading2"]))
-    category_data = [["Category", "Quantity", "Freight Rate", "Total"]]
+    categories = []
     subtotal = 0
     for c in config.categories:
-        cat_name = _get_category_name(db, c["category_id"]) if db else f"Category {c['category_id']}"
+        name  = _get_category_name(db, c["category_id"]) if db else f"Category {c['category_id']}"
         total = c["quantity"] * c["freight_rate"]
         subtotal += total
-        category_data.append([cat_name, str(c["quantity"]), f"${c['freight_rate']:.4f}", f"${total:.2f}"])
-    category_table = Table(category_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
-    category_table.setStyle(_table_style())
-    elements.append(category_table)
-    elements.append(Spacer(1, 0.2 * inch))
+        categories.append({"name": name, "quantity": c["quantity"], "freight_rate": c["freight_rate"], "total": total})
 
+    fees = []
     total_fees = 0
-    if config.fees:
-        elements.append(Paragraph("Fees", styles["Heading2"]))
-        fee_data = [["Fee", "Quantity", "Rate", "Total"]]
-        for f in config.fees:
-            fee_name = _get_fee_name(db, f["fee_id"]) if db else f"Fee {f['fee_id']}"
-            total = f["quantity"] * f["rate"]
-            total_fees += total
-            fee_data.append([fee_name, str(f["quantity"]), f"${f['rate']:.2f}", f"${total:.2f}"])
-        fee_table = Table(fee_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch, 1.5*inch])
-        fee_table.setStyle(_table_style())
-        elements.append(fee_table)
+    for f in config.fees:
+        name  = _get_fee_name(db, f["fee_id"]) if db else f"Fee {f['fee_id']}"
+        total = f["quantity"] * f["rate"]
+        total_fees += total
+        fees.append({"name": name, "quantity": f["quantity"], "rate": f["rate"], "total": total})
 
-    grand_total = subtotal + total_fees
-    footer_data = [
-        ["Subtotal", f"${subtotal:.2f}"],
-        ["Total Fees", f"${total_fees:.2f}"],
-        ["Grand Total", f"${grand_total:.2f}"],
-    ]
-    footer_table = Table(footer_data, colWidths=[4*inch, 2*inch])
-    footer_table.setStyle(TableStyle([
-        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-        ("LINEABOVE", (0, -1), (-1, -1), 1, colors.black),
-        ("ALIGN", (1, 0), (1, -1), "RIGHT"),
-    ]))
-    elements.append(footer_table)
-    doc.build(elements)
-    return filename
+    context = {
+        "show_logo":           show_logo,
+        "show_vendor_address": show_vendor_address,
+        "logo_path":           os.path.abspath(LOGO_PATH) if os.path.exists(LOGO_PATH) else None,
+        "invoice_number":      invoice_number,
+        "invoice_date":        datetime.now().strftime("%Y-%m-%d"),
+        "due_date":            datetime.now().strftime("%Y-%m-%d"),
+        "vendor":              config.vendor,
+        "categories":          categories,
+        "fees":                fees,
+        "subtotal":            subtotal,
+        "total_fees":          total_fees,
+        "grand_total":         subtotal + total_fees,
+    }
+
+    return _render_pdf("freight_invoice.html", context, filename)
 
 
 # --- DB lookup helpers ---
@@ -234,12 +177,3 @@ def _get_category_name(db, category_id):
     from app.models.product import ProductCategory
     c = db.query(ProductCategory).filter(ProductCategory.id == category_id).first()
     return c.name if c else f"Category {category_id}"
-
-def _table_style():
-    return TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
-    ])

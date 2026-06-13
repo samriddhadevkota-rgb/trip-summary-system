@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      color: #333;
+      margin: 40px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #059669;
+      padding-bottom: 20px;
+    }
+
+    .logo img { height: 60px; }
+
+    .logo-placeholder {
+      font-size: 22px;
+      font-weight: bold;
+      color: #059669;
+    }
+
+    .title-block { text-align: right; }
+
+    .title-block h1 {
+      font-size: 28px;
+      color: #059669;
+      margin: 0;
+    }
+
+    .title-block p { margin: 3px 0; color: #666; }
+
+    .info-grid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .info-block h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #999;
+      margin: 0 0 5px 0;
+    }
+
+    .info-block p { margin: 2px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    thead tr {
+      background-color: #059669;
+      color: white;
+    }
+
+    thead th {
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 12px;
+    }
+
+    tbody tr:nth-child(even) { background-color: #f0fdf4; }
+
+    tbody td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #059669;
+      margin: 20px 0 8px 0;
+      border-left: 4px solid #059669;
+      padding-left: 8px;
+    }
+
+    .timestamp-box {
+      margin-top: 30px;
+      padding: 15px;
+      background-color: #f0fdf4;
+      border: 1px solid #059669;
+      border-radius: 6px;
+    }
+
+    .timestamp-box p { margin: 4px 0; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      {% if show_logo and logo_path %}
+        <img src="{{ logo_path }}" alt="Logo">
+      {% else %}
+        <div class="logo-placeholder">Trip Summary System</div>
+      {% endif %}
+    </div>
+    <div class="title-block">
+      <h1>DELIVERY TICKET</h1>
+      <p><strong>Delivery #:</strong> {{ delivery_number }}</p>
+      <p><strong>Delivery Date:</strong> {{ delivery_date }}</p>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="info-grid">
+    <div class="info-block">
+      <h3>Customer</h3>
+      <p><strong>{{ customer.name }}</strong></p>
+    </div>
+
+    {% if show_delivery_address %}
+    <div class="info-block">
+      <h3>Delivery Location</h3>
+      <p><strong>{{ shipto.name }}</strong></p>
+      <p>{{ shipto.address }}</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="section-title">Products Delivered</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity Delivered</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in products %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.quantity }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- DELIVERY DETAILS -->
+  {% if show_delivery_timestamp %}
+  <div class="timestamp-box">
+    <p><strong>Delivery Timestamp:</strong> {{ delivery_timestamp }}</p>
+    <p><strong>Delivery Location:</strong> {{ shipto.name }}</p>
+    <p><strong>Address:</strong> {{ shipto.address }}</p>
+  </div>
+  {% endif %}
+
+</body>
+</html>
