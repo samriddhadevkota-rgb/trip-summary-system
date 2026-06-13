@@ -65,7 +65,7 @@ function Customers() {
       <div style={{ padding: "20px" }}>
       <h2 style={{ color: "#4f46e5" }}>👥 Customer Management</h2>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>➕ Add Customer</h3>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <input style={inputStyle} placeholder="Name" value={newCustomer.name}
@@ -94,7 +94,7 @@ function Customers() {
         </div>
       )}
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>➕ Add Ship To Location</h3>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <input style={inputStyle} placeholder="Customer ID" value={newShipTo.customer_id}

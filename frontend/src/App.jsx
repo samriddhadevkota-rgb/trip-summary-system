@@ -17,6 +17,13 @@ function App() {
 
   return (
     <BrowserRouter>
+      <div style={{
+        position: "fixed", top: "50%", left: "50%",
+        transform: "translate(-50%, -50%)",
+        fontSize: "550px", opacity: 0.05, zIndex: 0,
+        pointerEvents: "none", userSelect: "none", lineHeight: 1
+      }}>⛽</div>
+      <div style={{ position: "relative", zIndex: 1 }}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -32,6 +39,7 @@ function App() {
         <Route path="/configurations" element={token ? <Configurations /> : <Navigate to="/login" />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
+      </div>
     </BrowserRouter>
   )
 }

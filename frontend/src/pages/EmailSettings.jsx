@@ -59,7 +59,7 @@ function EmailSettings() {
       <div style={{ padding: "20px" }}>
       <h2 style={{ color: "#4f46e5" }}>Company Settings</h2>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>Company Logo</h3>
         <p style={{ color: "#666", fontSize: "13px" }}>Upload your company logo. It will appear on all generated PDFs.</p>
         {logoStatus?.exists && (
@@ -81,7 +81,7 @@ function EmailSettings() {
         </div>
       )}
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>⚙️ Configure SMTP (Gmail)</h3>
         <p style={{ color: "#666", fontSize: "13px" }}>
           Use Gmail with an <strong>App Password</strong> (not your regular password).
@@ -103,7 +103,7 @@ function EmailSettings() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>✉️ Send Test Email</h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px" }}>
           <div>

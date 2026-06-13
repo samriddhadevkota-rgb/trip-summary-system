@@ -42,7 +42,7 @@ function Documents() {
       <div style={{ padding: "20px" }}>
       <h2 style={{ color: "#4f46e5" }}>📄 Generated Documents</h2>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>🔧 Generate Document Manually</h3>
         {message && <p style={{ color: "green" }}>{message}</p>}
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
@@ -57,7 +57,7 @@ function Documents() {
         </p>
       </div>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px" }}>
         <h3 style={{ color: "#4f46e5" }}>📁 All Generated Documents</h3>
         <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>

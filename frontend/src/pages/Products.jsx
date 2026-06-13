@@ -63,7 +63,7 @@ function Products() {
       <div style={{ padding: "20px" }}>
       <h2 style={{ color: "#4f46e5" }}>📦 Product Management</h2>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>➕ Add Category</h3>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <input style={inputStyle} placeholder="Category Name" value={newCategory.name}
@@ -72,7 +72,7 @@ function Products() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>➕ Add Product</h3>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <input style={inputStyle} placeholder="Product Name" value={newProduct.name}

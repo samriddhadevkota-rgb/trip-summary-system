@@ -93,7 +93,7 @@ function Templates() {
       <div style={{ padding: "20px" }}>
       <h2 style={{ color: "#4f46e5" }}>📋 Document Template Builder</h2>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
         <h3 style={{ color: "#4f46e5" }}>{editId ? "✏️ Edit Template" : "➕ New Template"}</h3>
 
         <div style={{ marginBottom: "15px" }}>
@@ -127,7 +127,7 @@ function Templates() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px" }}>
+      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px" }}>
         <h3 style={{ color: "#4f46e5" }}>Saved Templates</h3>
         <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>

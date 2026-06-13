@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database import SessionLocal
 from app.models.product import Product, ProductCategory
 from pydantic import BaseModel
@@ -42,7 +42,7 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
 
 @router.get("")
 def get_products(db: Session = Depends(get_db)):
-    return db.query(Product).all()
+    return db.query(Product).options(joinedload(Product.category)).all()
 
 @router.get("/{id}")
 def get_product(id: int, db: Session = Depends(get_db)):

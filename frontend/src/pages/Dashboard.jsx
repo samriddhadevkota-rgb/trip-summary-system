@@ -69,7 +69,7 @@ function Dashboard() {
   }
 
   return (
-    <div style={{ fontFamily: "Arial", minHeight: "100vh", backgroundColor: "white" }}>
+    <div style={{ fontFamily: "Arial", minHeight: "100vh", backgroundColor: "transparent" }}>
 
       {/* Header */}
       <div style={{ backgroundColor: "#4f46e5", padding: "15px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -93,7 +93,7 @@ function Dashboard() {
       </div>
 
       <div style={{ padding: "20px" }}>
-        <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+        <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
           <h2 style={{ color: "#4f46e5" }}>➕ Add New Trip</h2>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <input style={inputStyle} placeholder="Driver Name" value={newTrip.driver_name}
@@ -114,7 +114,7 @@ function Dashboard() {
         </div>
 
         {editTrip && (
-          <div style={{ backgroundColor: "#fff3f3", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
+          <div style={{ backgroundColor: "rgba(255,243,243,0.75)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
             <h2 style={{ color: "#4f46e5" }}>✏️ Edit Trip</h2>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
               <input style={inputStyle} placeholder="Driver Name" value={editTrip.driver_name}
@@ -136,7 +136,7 @@ function Dashboard() {
           </div>
         )}
 
-        <div style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px" }}>
+        <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px" }}>
           <h2 style={{ color: "#4f46e5" }}>📋 All Trips</h2>
           {isLoading ? <p>Loading trips...</p> : (
             <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>

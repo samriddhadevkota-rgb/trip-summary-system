@@ -114,9 +114,26 @@
     }
 
     .text-right { text-align: right; }
+    .watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 320px;
+      opacity: 0.06;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    body > *:not(.watermark) {
+      position: relative;
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
+  <div class="watermark">⛽</div>
 
   <!-- HEADER -->
   <div class="header">
