@@ -11,6 +11,7 @@ import Documents from "./pages/Documents"
 import Templates from "./pages/Templates"
 import EmailSettings from "./pages/EmailSettings"
 import Configurations from "./pages/Configurations"
+import OAuthCallback from "./pages/OAuthCallback"
 
 function App() {
   const token = localStorage.getItem("token")
@@ -27,6 +28,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/customers" element={token ? <Customers /> : <Navigate to="/login" />} />
         <Route path="/vendors" element={token ? <Vendors /> : <Navigate to="/login" />} />
