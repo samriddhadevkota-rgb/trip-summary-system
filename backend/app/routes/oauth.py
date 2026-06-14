@@ -7,6 +7,7 @@ from app.database import SessionLocal
 from app.models.user import User
 from app.routes.auth import create_access_token
 from app.services.google_oauth import generate_auth_url, exchange_code, refresh_google_token
+from app.services.encryption import encrypt_token, decrypt_token
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -49,6 +50,7 @@ def google_callback(code: str = None, state: str = None, error: str = None, db: 
         user_info = exchange_code(code)
     except Exception as e:
         logger.error(f"Token exchange failed: {e}")
+        print(f"TOKEN EXCHANGE ERROR DETAIL: {e}")
         return RedirectResponse(url=f"{FRONTEND_URL}/login?error=token_exchange_failed")
 
     # Find user by Google ID first, then by email
@@ -63,7 +65,7 @@ def google_callback(code: str = None, state: str = None, error: str = None, db: 
         user.oauth_provider = "google"
         user.last_google_sync_at = datetime.utcnow()
         if user_info.get("refresh_token"):
-            user.google_refresh_token = user_info["refresh_token"]
+            user.google_refresh_token = encrypt_token(user_info["refresh_token"])
         logger.info(f"Existing user {user.email} logged in via Google")
     else:
         # New user — create account automatically
@@ -81,7 +83,7 @@ def google_callback(code: str = None, state: str = None, error: str = None, db: 
             email=email,
             hashed_password=None,
             google_id=user_info["google_id"],
-            google_refresh_token=user_info.get("refresh_token"),
+            google_refresh_token=encrypt_token(user_info.get("refresh_token", "")),
             oauth_provider="google",
             last_google_sync_at=datetime.utcnow(),
         )
@@ -113,7 +115,8 @@ def refresh_token(request: RefreshRequest, db: Session = Depends(get_db)):
     if not user.google_refresh_token:
         raise HTTPException(status_code=400, detail="No Google refresh token stored for this user")
 
-    new_access_token = refresh_google_token(user.google_refresh_token)
+    decrypted = decrypt_token(user.google_refresh_token)
+    new_access_token = refresh_google_token(decrypted)
 
     if not new_access_token:
         logger.error(f"Failed to refresh token for user: {user.username}")
