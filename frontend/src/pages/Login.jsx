@@ -122,7 +122,10 @@ export default function Login() {
             {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight size={16} /></>}
           </motion.button>
 
-          <p style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--text-muted)" }}>
+          <p style={{ textAlign: "center", marginTop: 14, fontSize: 13 }}>
+            <span style={{ color: "var(--text-muted)", cursor: "pointer" }} onClick={() => navigate("/forgot-password")}>Forgot password?</span>
+          </p>
+          <p style={{ textAlign: "center", marginTop: 8, fontSize: 13, color: "var(--text-muted)" }}>
             No account?{" "}
             <span style={{ color: "var(--accent)", cursor: "pointer", fontWeight: 500 }} onClick={() => navigate("/register")}>Create one</span>
           </p>

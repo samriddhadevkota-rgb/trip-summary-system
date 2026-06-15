@@ -15,7 +15,7 @@ class VendorCreate(BaseModel):
 
 @router.post("")
 def create_vendor(vendor: VendorCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    db_vendor = Vendor(**vendor.dict())
+    db_vendor = Vendor(**vendor.dict(), owner=current_user)
     db.add(db_vendor)
     db.commit()
     db.refresh(db_vendor)
@@ -23,21 +23,21 @@ def create_vendor(vendor: VendorCreate, db: Session = Depends(get_db), current_u
 
 @router.get("")
 def get_vendors(search: Optional[str] = Query(None), db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    q = db.query(Vendor)
+    q = db.query(Vendor).filter(Vendor.owner == current_user)
     if search:
         q = q.filter(Vendor.name.ilike(f"%{search}%") | Vendor.email.ilike(f"%{search}%"))
     return q.order_by(Vendor.name).all()
 
 @router.get("/{id}")
 def get_vendor(id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    v = db.query(Vendor).filter(Vendor.id == id).first()
+    v = db.query(Vendor).filter(Vendor.id == id, Vendor.owner == current_user).first()
     if not v:
         raise HTTPException(status_code=404, detail="Vendor not found")
     return v
 
 @router.put("/{id}")
 def update_vendor(id: int, vendor: VendorCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    db_vendor = db.query(Vendor).filter(Vendor.id == id).first()
+    db_vendor = db.query(Vendor).filter(Vendor.id == id, Vendor.owner == current_user).first()
     if not db_vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
     for key, value in vendor.dict().items():
@@ -48,7 +48,7 @@ def update_vendor(id: int, vendor: VendorCreate, db: Session = Depends(get_db), 
 
 @router.delete("/{id}")
 def delete_vendor(id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    db_vendor = db.query(Vendor).filter(Vendor.id == id).first()
+    db_vendor = db.query(Vendor).filter(Vendor.id == id, Vendor.owner == current_user).first()
     if not db_vendor:
         raise HTTPException(status_code=404, detail="Vendor not found")
     db.delete(db_vendor)

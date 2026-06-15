@@ -1,6 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from app.limiter import limiter
 from app.database import engine, Base
 from app.models import trip, user, customer, vendor, product, fee_tax, configuration
 from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth, analytics, portal
@@ -20,6 +24,10 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000"],
@@ -30,6 +38,8 @@ app.add_middleware(
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, RateLimitExceeded):
+        return JSONResponse(status_code=429, content={"detail": "Too many requests. Slow down."})
     logger.error(f"Unhandled error: {exc}", exc_info=True)
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 

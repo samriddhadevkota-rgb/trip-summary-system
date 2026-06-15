@@ -33,7 +33,7 @@ class TripResponse(BaseModel):
 
 @router.post("", response_model=TripResponse)
 def create_trip(trip: TripCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    new_trip = Trip(**trip.dict())
+    new_trip = Trip(**trip.dict(), owner=current_user)
     db.add(new_trip)
     db.commit()
     db.refresh(new_trip)
@@ -48,25 +48,24 @@ def get_trips(
     db: Session = Depends(get_db),
     current_user: str = Depends(get_current_user)
 ):
-    q = db.query(Trip)
+    q = db.query(Trip).filter(Trip.owner == current_user)
     if search:
         q = q.filter(Trip.driver_name.ilike(f"%{search}%") | Trip.origin.ilike(f"%{search}%") | Trip.destination.ilike(f"%{search}%"))
     if status:
         q = q.filter(Trip.status == status)
-    total = q.count()
     trips = q.order_by(Trip.created_at.desc()).offset(skip).limit(limit).all()
     return trips
 
 @router.get("/{trip_id}", response_model=TripResponse)
 def get_trip(trip_id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    trip = db.query(Trip).filter(Trip.id == trip_id).first()
+    trip = db.query(Trip).filter(Trip.id == trip_id, Trip.owner == current_user).first()
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     return trip
 
 @router.put("/{trip_id}", response_model=TripResponse)
 def update_trip(trip_id: int, trip: TripCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    existing = db.query(Trip).filter(Trip.id == trip_id).first()
+    existing = db.query(Trip).filter(Trip.id == trip_id, Trip.owner == current_user).first()
     if not existing:
         raise HTTPException(status_code=404, detail="Trip not found")
     for key, value in trip.dict().items():
@@ -77,7 +76,7 @@ def update_trip(trip_id: int, trip: TripCreate, db: Session = Depends(get_db), c
 
 @router.delete("/{trip_id}")
 def delete_trip(trip_id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    trip = db.query(Trip).filter(Trip.id == trip_id).first()
+    trip = db.query(Trip).filter(Trip.id == trip_id, Trip.owner == current_user).first()
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     db.delete(trip)

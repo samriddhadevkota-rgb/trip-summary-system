@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func, extract
+from sqlalchemy import func
 from datetime import datetime, timedelta
 from app.deps import get_db, get_current_user
 from app.models.trip import Trip
@@ -12,21 +12,19 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 @router.get("/stats")
 def get_stats(db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
-    total_trips = db.query(Trip).count()
-    completed = db.query(Trip).filter(Trip.status == "completed").count()
-    pending = db.query(Trip).filter(Trip.status == "pending").count()
-    in_progress = db.query(Trip).filter(Trip.status == "in_progress").count()
-    total_customers = db.query(Customer).count()
-    total_vendors = db.query(Vendor).count()
-    total_revenue = db.query(func.sum(Trip.revenue)).scalar() or 0
+    total_trips = db.query(Trip).filter(Trip.owner == current_user).count()
+    completed = db.query(Trip).filter(Trip.owner == current_user, Trip.status == "completed").count()
+    pending = db.query(Trip).filter(Trip.owner == current_user, Trip.status == "pending").count()
+    in_progress = db.query(Trip).filter(Trip.owner == current_user, Trip.status == "in_progress").count()
+    total_customers = db.query(Customer).filter(Customer.owner == current_user).count()
+    total_vendors = db.query(Vendor).filter(Vendor.owner == current_user).count()
+    total_revenue = db.query(func.sum(Trip.revenue)).filter(Trip.owner == current_user).scalar() or 0
     total_docs = db.query(GeneratedDocument).count()
 
     now = datetime.utcnow()
     month_start = now.replace(day=1, hour=0, minute=0, second=0)
-    trips_this_month = db.query(Trip).filter(Trip.created_at >= month_start).count()
-    revenue_this_month = db.query(func.sum(Trip.revenue)).filter(Trip.created_at >= month_start).scalar() or 0
+    trips_this_month = db.query(Trip).filter(Trip.owner == current_user, Trip.created_at >= month_start).count()
 
-    # Revenue last 6 months
     revenue_by_month = []
     for i in range(5, -1, -1):
         target = now - timedelta(days=30 * i)
@@ -36,10 +34,10 @@ def get_stats(db: Session = Depends(get_db), current_user: str = Depends(get_cur
         else:
             m_end = target.replace(month=target.month + 1, day=1, hour=0, minute=0, second=0)
         rev = db.query(func.sum(Trip.revenue)).filter(
-            Trip.created_at >= m_start, Trip.created_at < m_end
+            Trip.owner == current_user, Trip.created_at >= m_start, Trip.created_at < m_end
         ).scalar() or 0
         count = db.query(Trip).filter(
-            Trip.created_at >= m_start, Trip.created_at < m_end
+            Trip.owner == current_user, Trip.created_at >= m_start, Trip.created_at < m_end
         ).count()
         revenue_by_month.append({
             "month": target.strftime("%b"),
@@ -47,7 +45,6 @@ def get_stats(db: Session = Depends(get_db), current_user: str = Depends(get_cur
             "trips": count
         })
 
-    # Trips by status for pie chart
     trips_by_status = [
         {"name": "Completed", "value": completed, "color": "#10b981"},
         {"name": "Pending", "value": pending, "color": "#f59e0b"},
@@ -55,8 +52,7 @@ def get_stats(db: Session = Depends(get_db), current_user: str = Depends(get_cur
         {"name": "Other", "value": max(0, total_trips - completed - pending - in_progress), "color": "#5c5c78"},
     ]
 
-    # Recent trips
-    recent_trips = db.query(Trip).order_by(Trip.created_at.desc()).limit(5).all()
+    recent_trips = db.query(Trip).filter(Trip.owner == current_user).order_by(Trip.created_at.desc()).limit(5).all()
 
     return {
         "total_trips": total_trips,

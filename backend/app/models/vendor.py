@@ -11,3 +11,4 @@ class Vendor(Base):
     email = Column(String)
     phone = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
+    owner = Column(String, nullable=True, index=True)

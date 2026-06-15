@@ -15,6 +15,8 @@ import EmailSettings from "./pages/EmailSettings"
 import Configurations from "./pages/Configurations"
 import OAuthCallback from "./pages/OAuthCallback"
 import CustomerPortal from "./pages/CustomerPortal"
+import ForgotPassword from "./pages/ForgotPassword"
+import ResetPassword from "./pages/ResetPassword"
 
 function Protected({ children }) {
   const token = localStorage.getItem("token")
@@ -40,6 +42,8 @@ function AnimatedRoutes() {
           <Route path="/register" element={<Register />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/portal" element={<CustomerPortal />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard"      element={<Protected><Dashboard /></Protected>} />
           <Route path="/customers"      element={<Protected><Customers /></Protected>} />
           <Route path="/vendors"        element={<Protected><Vendors /></Protected>} />
