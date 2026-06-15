@@ -1,118 +1,60 @@
-import NavBar from "../components/NavBar"
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-
+import toast, { Toaster } from "react-hot-toast"
+import { Plus, Edit2, Trash2, DollarSign } from "lucide-react"
+import Sidebar from "../components/Sidebar"
+import { PageLayout, PageHeader, Card, Button, Modal, Input, SearchBar, SkeletonTable } from "../components/UI"
 const API = "http://localhost:8000"
-
-function Fees() {
-  const queryClient = useQueryClient()
-  const token = localStorage.getItem("token")
-  const [newFee, setNewFee] = useState({ name: "", default_rate: "" })
-  const [editFee, setEditFee] = useState(null)
-
-  const { data: fees = [] } = useQuery({
-    queryKey: ["fees"],
-    queryFn: () => fetch(API + "/fees", {
-      headers: { Authorization: "Bearer " + token }
-    }).then(res => res.json())
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (fee) => fetch(API + "/fees", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({...fee, default_rate: parseFloat(fee.default_rate)})
-    }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["fees"])
-      setNewFee({ name: "", default_rate: "" })
-    }
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: (fee) => fetch(API + "/fees/" + fee.id, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({name: fee.name, default_rate: parseFloat(fee.default_rate)})
-    }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["fees"])
-      setEditFee(null)
-    }
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => fetch(API + "/fees/" + id, {
-      method: "DELETE",
-      headers: { Authorization: "Bearer " + token }
-    }).then(res => res.json()),
-    onSuccess: () => queryClient.invalidateQueries(["fees"])
-  })
-
-  return (
-    <div>
-      <NavBar />
-      <div style={{ padding: "20px" }}>
-      <h2 style={{ color: "#4f46e5" }}>💰 Fee Management</h2>
-
-      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-        <h3 style={{ color: "#4f46e5" }}>➕ Add Fee</h3>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <input style={inputStyle} placeholder="Fee Name" value={newFee.name}
-            onChange={e => setNewFee({...newFee, name: e.target.value})} />
-          <input style={inputStyle} placeholder="Default Rate" value={newFee.default_rate}
-            onChange={e => setNewFee({...newFee, default_rate: e.target.value})} />
-          <button style={btnStyle} onClick={() => createMutation.mutate(newFee)}>Add</button>
-        </div>
-      </div>
-
-      {editFee && (
-        <div style={{ backgroundColor: "#fff3f3", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-          <h3 style={{ color: "#4f46e5" }}>✏️ Edit Fee</h3>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <input style={inputStyle} placeholder="Fee Name" value={editFee.name}
-              onChange={e => setEditFee({...editFee, name: e.target.value})} />
-            <input style={inputStyle} placeholder="Default Rate" value={editFee.default_rate}
-              onChange={e => setEditFee({...editFee, default_rate: e.target.value})} />
-            <button style={btnStyle} onClick={() => updateMutation.mutate(editFee)}>Save</button>
-            <button style={{...btnStyle, backgroundColor: "gray"}} onClick={() => setEditFee(null)}>Cancel</button>
+const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
+const EMPTY = { name: "", default_rate: "" }
+export default function Fees() {
+  const qc = useQueryClient()
+  const [search, setSearch] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [editItem, setEditItem] = useState(null)
+  const [form, setForm] = useState(EMPTY)
+  const { data: items = [], isLoading } = useQuery({ queryKey: ["fees"], queryFn: () => fetch(API + "/fees", { headers: H() }).then(r => r.json()) })
+  const create = useMutation({ mutationFn: d => fetch(API+"/fees",{method:"POST",headers:H(),body:JSON.stringify({...d,default_rate:parseFloat(d.default_rate)||0})}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["fees"]);toast.success("Fee added!");setShowModal(false);setForm(EMPTY)} })
+  const update = useMutation({ mutationFn: ({id,data})=>fetch(API+"/fees/"+id,{method:"PUT",headers:H(),body:JSON.stringify({...data,default_rate:parseFloat(data.default_rate)||0})}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["fees"]);toast.success("Updated!");setShowModal(false);setEditItem(null)} })
+  const del = useMutation({ mutationFn: id=>fetch(API+"/fees/"+id,{method:"DELETE",headers:H()}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["fees"]);toast.success("Deleted")} })
+  const openCreate = () => { setForm(EMPTY); setEditItem(null); setShowModal(true) }
+  const openEdit = item => { setForm({...item}); setEditItem(item); setShowModal(true) }
+  const submit = () => editItem ? update.mutate({id:editItem.id,data:form}) : create.mutate(form)
+  const filtered = items.filter(i => (i.name||"").toLowerCase().includes(search.toLowerCase()))
+  return (<>
+    <Toaster position="top-right" toastOptions={{style:{background:"var(--bg-card)",color:"var(--text-primary)",border:"1px solid var(--border)"}}} />
+    <Sidebar />
+    <PageLayout>
+      <PageHeader title="Fees" subtitle={`${items.length} fee types`} action={<Button icon={Plus} onClick={openCreate}>Add Fee</Button>} />
+      <div style={{marginBottom:16}}><SearchBar value={search} onChange={setSearch} placeholder="Search fees..." /></div>
+      <Card style={{padding:0,overflow:"hidden"}}>
+        {isLoading ? <SkeletonTable /> : filtered.length===0 ? (
+          <div style={{textAlign:"center",padding:"48px",color:"var(--text-muted)"}}>
+            <DollarSign size={40} style={{margin:"0 auto 12px",display:"block",opacity:0.3}} /><p>No fees yet</p>
           </div>
-        </div>
-      )}
-
-      <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ backgroundColor: "#4f46e5", color: "white" }}>
-            <th style={thStyle}>ID</th>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Default Rate</th>
-            <th style={thStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fees.map(fee => (
-            <tr key={fee.id}>
-              <td style={tdStyle}>{fee.id}</td>
-              <td style={tdStyle}>{fee.name}</td>
-              <td style={tdStyle}>${fee.default_rate}</td>
-              <td style={tdStyle}>
-                <button style={{...btnStyle, backgroundColor: "blue", marginRight: "5px"}}
-                  onClick={() => setEditFee(fee)}>Update</button>
-                <button style={{...btnStyle, backgroundColor: "red"}}
-                  onClick={() => deleteMutation.mutate(fee.id)}>Delete</button>
-              </td>
+        ) : <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Default Rate</th><th>Actions</th></tr></thead>
+          <tbody>{filtered.map(item=>(
+            <tr key={item.id}>
+              <td style={{color:"var(--text-muted)",fontSize:12}}>#{item.id}</td>
+              <td style={{color:"var(--text-primary)",fontWeight:500}}>{item.name}</td>
+              <td style={{color:"var(--success)",fontWeight:500}}>${parseFloat(item.default_rate||0).toFixed(2)}</td>
+              <td><div style={{display:"flex",gap:6}}>
+                <Button variant="ghost" size="sm" icon={Edit2} onClick={()=>openEdit(item)} />
+                <Button variant="danger" size="sm" icon={Trash2} onClick={()=>{if(confirm("Delete?"))del.mutate(item.id)}} />
+              </div></td>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    </div>
-  )
+          ))}</tbody>
+        </table>}
+      </Card>
+      <Modal open={showModal} onClose={()=>{setShowModal(false);setEditItem(null)}} title={editItem?"Edit Fee":"Add Fee"}>
+        <Input label="Fee Name" placeholder="e.g. Delivery Fee" value={form.name||""} onChange={e=>setForm({...form,name:e.target.value})} />
+        <Input label="Default Rate ($)" type="number" placeholder="0.00" value={form.default_rate||""} onChange={e=>setForm({...form,default_rate:e.target.value})} />
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}>
+          <Button variant="secondary" onClick={()=>{setShowModal(false);setEditItem(null)}}>Cancel</Button>
+          <Button onClick={submit}>{editItem?"Save Changes":"Add Fee"}</Button>
+        </div>
+      </Modal>
+    </PageLayout>
+  </>)
 }
-
-const inputStyle = { padding: "8px", borderRadius: "6px", border: "1px solid #4f46e5", fontSize: "14px" }
-const btnStyle = { padding: "8px 15px", backgroundColor: "#4f46e5", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }
-const thStyle = { padding: "10px", textAlign: "left" }
-const tdStyle = { padding: "10px" }
-
-export default Fees

@@ -1,23 +1,17 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.models.customer import Customer, ShipTo
 from pydantic import BaseModel
 from typing import Optional
+from app.deps import get_db, get_current_user
+from app.models.customer import Customer, ShipTo
 
 router = APIRouter(prefix="/customers", tags=["customers"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 class CustomerCreate(BaseModel):
     name: str
     billing_address: str
     email: str
+    phone: Optional[str] = None
 
 class ShipToCreate(BaseModel):
     customer_id: int
@@ -25,7 +19,7 @@ class ShipToCreate(BaseModel):
     address: str
 
 @router.post("")
-def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+def create_customer(customer: CustomerCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     db_customer = Customer(**customer.dict())
     db.add(db_customer)
     db.commit()
@@ -33,16 +27,24 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     return db_customer
 
 @router.get("")
-def get_customers(db: Session = Depends(get_db)):
-    return db.query(Customer).all()
+def get_customers(search: Optional[str] = Query(None), db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    q = db.query(Customer)
+    if search:
+        q = q.filter(Customer.name.ilike(f"%{search}%") | Customer.email.ilike(f"%{search}%"))
+    return q.order_by(Customer.name).all()
 
 @router.get("/{id}")
-def get_customer(id: int, db: Session = Depends(get_db)):
-    return db.query(Customer).filter(Customer.id == id).first()
+def get_customer(id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    c = db.query(Customer).filter(Customer.id == id).first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return c
 
 @router.put("/{id}")
-def update_customer(id: int, customer: CustomerCreate, db: Session = Depends(get_db)):
+def update_customer(id: int, customer: CustomerCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     db_customer = db.query(Customer).filter(Customer.id == id).first()
+    if not db_customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
     for key, value in customer.dict().items():
         setattr(db_customer, key, value)
     db.commit()
@@ -50,14 +52,16 @@ def update_customer(id: int, customer: CustomerCreate, db: Session = Depends(get
     return db_customer
 
 @router.delete("/{id}")
-def delete_customer(id: int, db: Session = Depends(get_db)):
+def delete_customer(id: int, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     db_customer = db.query(Customer).filter(Customer.id == id).first()
+    if not db_customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
     db.delete(db_customer)
     db.commit()
     return {"message": "Deleted"}
 
 @router.post("/ship-tos")
-def create_shipto(shipto: ShipToCreate, db: Session = Depends(get_db)):
+def create_shipto(shipto: ShipToCreate, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     db_shipto = ShipTo(**shipto.dict())
     db.add(db_shipto)
     db.commit()
@@ -65,5 +69,5 @@ def create_shipto(shipto: ShipToCreate, db: Session = Depends(get_db)):
     return db_shipto
 
 @router.get("/ship-tos/all")
-def get_ship_tos(db: Session = Depends(get_db)):
+def get_ship_tos(db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
     return db.query(ShipTo).all()

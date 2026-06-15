@@ -1,124 +1,62 @@
-import NavBar from "../components/NavBar"
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-
+import toast, { Toaster } from "react-hot-toast"
+import { Plus, Edit2, Trash2, Truck } from "lucide-react"
+import Sidebar from "../components/Sidebar"
+import { PageLayout, PageHeader, Card, Button, Modal, Input, SearchBar, SkeletonTable } from "../components/UI"
 const API = "http://localhost:8000"
-
-function Vendors() {
-  const queryClient = useQueryClient()
-  const token = localStorage.getItem("token")
-  const [newVendor, setNewVendor] = useState({ name: "", address: "", email: "" })
-  const [editVendor, setEditVendor] = useState(null)
-
-  const { data: vendors = [] } = useQuery({
-    queryKey: ["vendors"],
-    queryFn: () => fetch(API + "/vendors", {
-      headers: { Authorization: "Bearer " + token }
-    }).then(res => res.json())
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (vendor) => fetch(API + "/vendors", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify(vendor)
-    }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["vendors"])
-      setNewVendor({ name: "", address: "", email: "" })
-    }
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: (vendor) => fetch(API + "/vendors/" + vendor.id, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify(vendor)
-    }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["vendors"])
-      setEditVendor(null)
-    }
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => fetch(API + "/vendors/" + id, {
-      method: "DELETE",
-      headers: { Authorization: "Bearer " + token }
-    }).then(res => res.json()),
-    onSuccess: () => queryClient.invalidateQueries(["vendors"])
-  })
-
-  return (
-    <div>
-      <NavBar />
-      <div style={{ padding: "20px" }}>
-      <h2 style={{ color: "#4f46e5" }}>🏢 Vendor Management</h2>
-
-      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-        <h3 style={{ color: "#4f46e5" }}>➕ Add Vendor</h3>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <input style={inputStyle} placeholder="Name" value={newVendor.name}
-            onChange={e => setNewVendor({...newVendor, name: e.target.value})} />
-          <input style={inputStyle} placeholder="Address" value={newVendor.address}
-            onChange={e => setNewVendor({...newVendor, address: e.target.value})} />
-          <input style={inputStyle} placeholder="Email" value={newVendor.email}
-            onChange={e => setNewVendor({...newVendor, email: e.target.value})} />
-          <button style={btnStyle} onClick={() => createMutation.mutate(newVendor)}>Add</button>
-        </div>
-      </div>
-
-      {editVendor && (
-        <div style={{ backgroundColor: "#fff3f3", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-          <h3 style={{ color: "#4f46e5" }}>✏️ Edit Vendor</h3>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <input style={inputStyle} placeholder="Name" value={editVendor.name}
-              onChange={e => setEditVendor({...editVendor, name: e.target.value})} />
-            <input style={inputStyle} placeholder="Address" value={editVendor.address}
-              onChange={e => setEditVendor({...editVendor, address: e.target.value})} />
-            <input style={inputStyle} placeholder="Email" value={editVendor.email}
-              onChange={e => setEditVendor({...editVendor, email: e.target.value})} />
-            <button style={btnStyle} onClick={() => updateMutation.mutate(editVendor)}>Save</button>
-            <button style={{...btnStyle, backgroundColor: "gray"}} onClick={() => setEditVendor(null)}>Cancel</button>
+const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
+const EMPTY = { name: "", email: "", address: "" }
+export default function Vendors() {
+  const qc = useQueryClient()
+  const [search, setSearch] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [editItem, setEditItem] = useState(null)
+  const [form, setForm] = useState(EMPTY)
+  const { data: items = [], isLoading } = useQuery({ queryKey: ["vendors"], queryFn: () => fetch(API + "/vendors", { headers: H() }).then(r => r.json()) })
+  const create = useMutation({ mutationFn: d => fetch(API+"/vendors",{method:"POST",headers:H(),body:JSON.stringify(d)}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["vendors"]);toast.success("Vendor added!");setShowModal(false);setForm(EMPTY)} })
+  const update = useMutation({ mutationFn: ({id,data})=>fetch(API+"/vendors/"+id,{method:"PUT",headers:H(),body:JSON.stringify(data)}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["vendors"]);toast.success("Updated!");setShowModal(false);setEditItem(null)} })
+  const del = useMutation({ mutationFn: id=>fetch(API+"/vendors/"+id,{method:"DELETE",headers:H()}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["vendors"]);toast.success("Deleted")} })
+  const openCreate = () => { setForm(EMPTY); setEditItem(null); setShowModal(true) }
+  const openEdit = item => { setForm({...item}); setEditItem(item); setShowModal(true) }
+  const submit = () => editItem ? update.mutate({id:editItem.id,data:form}) : create.mutate(form)
+  const filtered = items.filter(i => [i.name,i.email,i.address].some(v=>(v||"").toLowerCase().includes(search.toLowerCase())))
+  return (<>
+    <Toaster position="top-right" toastOptions={{style:{background:"var(--bg-card)",color:"var(--text-primary)",border:"1px solid var(--border)"}}} />
+    <Sidebar />
+    <PageLayout>
+      <PageHeader title="Vendors" subtitle={`${items.length} total`} action={<Button icon={Plus} onClick={openCreate}>Add Vendor</Button>} />
+      <div style={{marginBottom:16}}><SearchBar value={search} onChange={setSearch} placeholder="Search vendors..." /></div>
+      <Card style={{padding:0,overflow:"hidden"}}>
+        {isLoading ? <SkeletonTable /> : filtered.length===0 ? (
+          <div style={{textAlign:"center",padding:"48px",color:"var(--text-muted)"}}>
+            <Truck size={40} style={{margin:"0 auto 12px",display:"block",opacity:0.3}} /><p>{search?"No results":"No vendors yet"}</p>
           </div>
-        </div>
-      )}
-
-      <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ backgroundColor: "#4f46e5", color: "white" }}>
-            <th style={thStyle}>ID</th>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Address</th>
-            <th style={thStyle}>Email</th>
-            <th style={thStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {vendors.map(vendor => (
-            <tr key={vendor.id}>
-              <td style={tdStyle}>{vendor.id}</td>
-              <td style={tdStyle}>{vendor.name}</td>
-              <td style={tdStyle}>{vendor.address}</td>
-              <td style={tdStyle}>{vendor.email}</td>
-              <td style={tdStyle}>
-                <button style={{...btnStyle, backgroundColor: "blue", marginRight: "5px"}}
-                  onClick={() => setEditVendor(vendor)}>Update</button>
-                <button style={{...btnStyle, backgroundColor: "red"}}
-                  onClick={() => deleteMutation.mutate(vendor.id)}>Delete</button>
-              </td>
+        ) : <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Address</th><th>Actions</th></tr></thead>
+          <tbody>{filtered.map(item=>(
+            <tr key={item.id}>
+              <td style={{color:"var(--text-muted)",fontSize:12}}>#{item.id}</td>
+              <td style={{color:"var(--text-primary)",fontWeight:500}}>{item.name}</td>
+              <td>{item.email}</td>
+              <td style={{color:"var(--text-muted)"}}>{item.address}</td>
+              <td><div style={{display:"flex",gap:6}}>
+                <Button variant="ghost" size="sm" icon={Edit2} onClick={()=>openEdit(item)} />
+                <Button variant="danger" size="sm" icon={Trash2} onClick={()=>{if(confirm("Delete?"))del.mutate(item.id)}} />
+              </div></td>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    </div>
-  )
+          ))}</tbody>
+        </table>}
+      </Card>
+      <Modal open={showModal} onClose={()=>{setShowModal(false);setEditItem(null)}} title={editItem?"Edit Vendor":"Add Vendor"}>
+        <Input label="Name" placeholder="Vendor name" value={form.name||""} onChange={e=>setForm({...form,name:e.target.value})} />
+        <Input label="Email" type="email" placeholder="email@vendor.com" value={form.email||""} onChange={e=>setForm({...form,email:e.target.value})} />
+        <Input label="Address" placeholder="123 Depot Rd" value={form.address||""} onChange={e=>setForm({...form,address:e.target.value})} />
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}>
+          <Button variant="secondary" onClick={()=>{setShowModal(false);setEditItem(null)}}>Cancel</Button>
+          <Button onClick={submit}>{editItem?"Save Changes":"Add Vendor"}</Button>
+        </div>
+      </Modal>
+    </PageLayout>
+  </>)
 }
-
-const inputStyle = { padding: "8px", borderRadius: "6px", border: "1px solid #4f46e5", fontSize: "14px" }
-const btnStyle = { padding: "8px 15px", backgroundColor: "#4f46e5", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }
-const thStyle = { padding: "10px", textAlign: "left" }
-const tdStyle = { padding: "10px" }
-
-export default Vendors

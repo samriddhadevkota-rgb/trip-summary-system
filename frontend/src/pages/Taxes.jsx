@@ -1,115 +1,60 @@
-import NavBar from "../components/NavBar"
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-
+import toast, { Toaster } from "react-hot-toast"
+import { Plus, Edit2, Trash2, Percent } from "lucide-react"
+import Sidebar from "../components/Sidebar"
+import { PageLayout, PageHeader, Card, Button, Badge, Modal, Input, SearchBar, SkeletonTable } from "../components/UI"
 const API = "http://localhost:8000"
-
-function Taxes() {
-  const queryClient = useQueryClient()
-  const token = localStorage.getItem("token")
-  const [newTax, setNewTax] = useState({ name: "", percentage: "" })
-  const [editTax, setEditTax] = useState(null)
-
-  const { data: taxes = [] } = useQuery({
-    queryKey: ["taxes"],
-    queryFn: () => fetch(API + "/taxes", {
-      headers: { Authorization: "Bearer " + token }
-    }).then(res => res.json())
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (tax) => fetch(API + "/taxes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({...tax, percentage: parseFloat(tax.percentage)})
-    }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["taxes"])
-      setNewTax({ name: "", percentage: "" })
-    }
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: (tax) => fetch(API + "/taxes/" + tax.id, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({name: tax.name, percentage: parseFloat(tax.percentage)})
-    }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["taxes"])
-      setEditTax(null)
-    }
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => fetch(API + "/taxes/" + id, {
-      method: "DELETE",
-      headers: { Authorization: "Bearer " + token }
-    }).then(res => res.json()),
-    onSuccess: () => queryClient.invalidateQueries(["taxes"])
-  })
-
-  return (
-    <div>
-      <NavBar />
-      <div style={{ padding: "20px" }}>
-      <h2 style={{ color: "#4f46e5" }}>📊 Tax Management</h2>
-      <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-        <h3 style={{ color: "#4f46e5" }}>➕ Add Tax</h3>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <input style={inputStyle} placeholder="Tax Name" value={newTax.name}
-            onChange={e => setNewTax({...newTax, name: e.target.value})} />
-          <input style={inputStyle} placeholder="Percentage" value={newTax.percentage}
-            onChange={e => setNewTax({...newTax, percentage: e.target.value})} />
-          <button style={btnStyle} onClick={() => createMutation.mutate(newTax)}>Add</button>
-        </div>
-      </div>
-      {editTax && (
-        <div style={{ backgroundColor: "#fff3f3", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-          <h3 style={{ color: "#4f46e5" }}>✏️ Edit Tax</h3>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <input style={inputStyle} placeholder="Tax Name" value={editTax.name}
-              onChange={e => setEditTax({...editTax, name: e.target.value})} />
-            <input style={inputStyle} placeholder="Percentage" value={editTax.percentage}
-              onChange={e => setEditTax({...editTax, percentage: e.target.value})} />
-            <button style={btnStyle} onClick={() => updateMutation.mutate(editTax)}>Save</button>
-            <button style={{...btnStyle, backgroundColor: "gray"}} onClick={() => setEditTax(null)}>Cancel</button>
+const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
+const EMPTY = { name: "", percentage: "" }
+export default function Taxes() {
+  const qc = useQueryClient()
+  const [search, setSearch] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [editItem, setEditItem] = useState(null)
+  const [form, setForm] = useState(EMPTY)
+  const { data: items = [], isLoading } = useQuery({ queryKey: ["taxes"], queryFn: () => fetch(API + "/taxes", { headers: H() }).then(r => r.json()) })
+  const create = useMutation({ mutationFn: d => fetch(API+"/taxes",{method:"POST",headers:H(),body:JSON.stringify({...d,percentage:parseFloat(d.percentage)||0})}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["taxes"]);toast.success("Tax added!");setShowModal(false);setForm(EMPTY)} })
+  const update = useMutation({ mutationFn: ({id,data})=>fetch(API+"/taxes/"+id,{method:"PUT",headers:H(),body:JSON.stringify({...data,percentage:parseFloat(data.percentage)||0})}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["taxes"]);toast.success("Updated!");setShowModal(false);setEditItem(null)} })
+  const del = useMutation({ mutationFn: id=>fetch(API+"/taxes/"+id,{method:"DELETE",headers:H()}).then(r=>r.json()), onSuccess:()=>{qc.invalidateQueries(["taxes"]);toast.success("Deleted")} })
+  const openCreate = () => { setForm(EMPTY); setEditItem(null); setShowModal(true) }
+  const openEdit = item => { setForm({...item}); setEditItem(item); setShowModal(true) }
+  const submit = () => editItem ? update.mutate({id:editItem.id,data:form}) : create.mutate(form)
+  const filtered = items.filter(i => (i.name||"").toLowerCase().includes(search.toLowerCase()))
+  return (<>
+    <Toaster position="top-right" toastOptions={{style:{background:"var(--bg-card)",color:"var(--text-primary)",border:"1px solid var(--border)"}}} />
+    <Sidebar />
+    <PageLayout>
+      <PageHeader title="Taxes" subtitle={`${items.length} tax rates`} action={<Button icon={Plus} onClick={openCreate}>Add Tax</Button>} />
+      <div style={{marginBottom:16}}><SearchBar value={search} onChange={setSearch} placeholder="Search taxes..." /></div>
+      <Card style={{padding:0,overflow:"hidden"}}>
+        {isLoading ? <SkeletonTable /> : filtered.length===0 ? (
+          <div style={{textAlign:"center",padding:"48px",color:"var(--text-muted)"}}>
+            <Percent size={40} style={{margin:"0 auto 12px",display:"block",opacity:0.3}} /><p>No taxes yet</p>
           </div>
-        </div>
-      )}
-      <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ backgroundColor: "#4f46e5", color: "white" }}>
-            <th style={thStyle}>ID</th>
-            <th style={thStyle}>Name</th>
-            <th style={thStyle}>Percentage</th>
-            <th style={thStyle}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {taxes.map(tax => (
-            <tr key={tax.id}>
-              <td style={tdStyle}>{tax.id}</td>
-              <td style={tdStyle}>{tax.name}</td>
-              <td style={tdStyle}>{tax.percentage}%</td>
-              <td style={tdStyle}>
-                <button style={{...btnStyle, backgroundColor: "blue", marginRight: "5px"}}
-                  onClick={() => setEditTax(tax)}>Update</button>
-                <button style={{...btnStyle, backgroundColor: "red"}}
-                  onClick={() => deleteMutation.mutate(tax.id)}>Delete</button>
-              </td>
+        ) : <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Rate</th><th>Actions</th></tr></thead>
+          <tbody>{filtered.map(item=>(
+            <tr key={item.id}>
+              <td style={{color:"var(--text-muted)",fontSize:12}}>#{item.id}</td>
+              <td style={{color:"var(--text-primary)",fontWeight:500}}>{item.name}</td>
+              <td><Badge color="var(--warning)">{item.percentage}%</Badge></td>
+              <td><div style={{display:"flex",gap:6}}>
+                <Button variant="ghost" size="sm" icon={Edit2} onClick={()=>openEdit(item)} />
+                <Button variant="danger" size="sm" icon={Trash2} onClick={()=>{if(confirm("Delete?"))del.mutate(item.id)}} />
+              </div></td>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    </div>
-  )
+          ))}</tbody>
+        </table>}
+      </Card>
+      <Modal open={showModal} onClose={()=>{setShowModal(false);setEditItem(null)}} title={editItem?"Edit Tax":"Add Tax"}>
+        <Input label="Tax Name" placeholder="e.g. Sales Tax" value={form.name||""} onChange={e=>setForm({...form,name:e.target.value})} />
+        <Input label="Percentage (%)" type="number" placeholder="8.5" value={form.percentage||""} onChange={e=>setForm({...form,percentage:e.target.value})} />
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:8}}>
+          <Button variant="secondary" onClick={()=>{setShowModal(false);setEditItem(null)}}>Cancel</Button>
+          <Button onClick={submit}>{editItem?"Save Changes":"Add Tax"}</Button>
+        </div>
+      </Modal>
+    </PageLayout>
+  </>)
 }
-
-const inputStyle = { padding: "8px", borderRadius: "6px", border: "1px solid #4f46e5", fontSize: "14px" }
-const btnStyle = { padding: "8px 15px", backgroundColor: "#4f46e5", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }
-const thStyle = { padding: "10px", textAlign: "left" }
-const tdStyle = { padding: "10px" }
-
-export default Taxes

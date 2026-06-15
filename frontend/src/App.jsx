@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
+import Landing from "./pages/Landing"
 import Dashboard from "./pages/Dashboard"
 import Customers from "./pages/Customers"
 import Vendors from "./pages/Vendors"
@@ -13,37 +14,31 @@ import EmailSettings from "./pages/EmailSettings"
 import Configurations from "./pages/Configurations"
 import OAuthCallback from "./pages/OAuthCallback"
 
-function App() {
+function Protected({ children }) {
   const token = localStorage.getItem("token")
+  return token ? children : <Navigate to="/login" />
+}
 
+export default function App() {
   return (
     <BrowserRouter>
-      <div style={{
-        position: "fixed", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        fontSize: "550px", opacity: 0.05, zIndex: 0,
-        pointerEvents: "none", userSelect: "none", lineHeight: 1
-      }}>⛽</div>
-      <div style={{ position: "relative", zIndex: 1 }}>
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
-        <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/customers" element={token ? <Customers /> : <Navigate to="/login" />} />
-        <Route path="/vendors" element={token ? <Vendors /> : <Navigate to="/login" />} />
-        <Route path="/products" element={token ? <Products /> : <Navigate to="/login" />} />
-        <Route path="/fees" element={token ? <Fees /> : <Navigate to="/login" />} />
-        <Route path="/taxes" element={token ? <Taxes /> : <Navigate to="/login" />} />
-        <Route path="/documents" element={token ? <Documents /> : <Navigate to="/login" />} />
-        <Route path="/templates" element={token ? <Templates /> : <Navigate to="/login" />} />
-        <Route path="/email-settings" element={token ? <EmailSettings /> : <Navigate to="/login" />} />
-        <Route path="/configurations" element={token ? <Configurations /> : <Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="/dashboard"      element={<Protected><Dashboard /></Protected>} />
+        <Route path="/customers"      element={<Protected><Customers /></Protected>} />
+        <Route path="/vendors"        element={<Protected><Vendors /></Protected>} />
+        <Route path="/products"       element={<Protected><Products /></Protected>} />
+        <Route path="/fees"           element={<Protected><Fees /></Protected>} />
+        <Route path="/taxes"          element={<Protected><Taxes /></Protected>} />
+        <Route path="/documents"      element={<Protected><Documents /></Protected>} />
+        <Route path="/templates"      element={<Protected><Templates /></Protected>} />
+        <Route path="/email-settings" element={<Protected><EmailSettings /></Protected>} />
+        <Route path="/configurations" element={<Protected><Configurations /></Protected>} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-      </div>
     </BrowserRouter>
   )
 }
-
-export default App

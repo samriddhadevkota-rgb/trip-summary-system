@@ -1,20 +1,37 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.database import engine, Base
 from app.models import trip, user, customer, vendor, product, fee_tax, configuration
-from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth
+from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth, analytics
 from app.services.scheduler import start_scheduler, stop_scheduler
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="TripSync API",
+    description="Premium fuel & freight trip management system",
+    version="2.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 app.include_router(auth.router)
 app.include_router(trips.router)
@@ -28,9 +45,11 @@ app.include_router(email_settings.router)
 app.include_router(templates.router)
 app.include_router(settings.router)
 app.include_router(oauth.router)
+app.include_router(analytics.router)
 
 @app.on_event("startup")
 def startup_event():
+    logger.info("TripSync API starting up...")
     start_scheduler()
 
 @app.on_event("shutdown")
@@ -39,4 +58,8 @@ def shutdown_event():
 
 @app.get("/")
 async def root():
-    return {"message": "Backend Running"}
+    return {"status": "ok", "version": "2.0.0", "message": "TripSync API is running"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}

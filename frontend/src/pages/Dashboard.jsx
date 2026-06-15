@@ -1,186 +1,189 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import toast, { Toaster } from "react-hot-toast"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts"
+import { TrendingUp, Users, Plus, Edit2, Trash2, MapPin, Fuel } from "lucide-react"
+import { motion } from "framer-motion"
+import Sidebar from "../components/Sidebar"
+import { PageLayout, PageHeader, Card, StatCard, Button, Badge, Modal, Input, Select, SearchBar, SkeletonCard, SkeletonTable } from "../components/UI"
 
 const API = "http://localhost:8000"
+const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
+const STATUS_COLORS = { completed: "var(--success)", pending: "var(--warning)", in_progress: "var(--accent)", cancelled: "var(--danger)" }
+const STATUS_OPTIONS = ["pending", "in_progress", "completed", "cancelled"]
+const EMPTY = { driver_name: "", origin: "", destination: "", total_gallons: "", total_stops: "", revenue: "", status: "pending", notes: "" }
 
-function Dashboard() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const token = localStorage.getItem("token")
-
-  const [editTrip, setEditTrip] = useState(null)
-  const [newTrip, setNewTrip] = useState({ driver_name: "", total_gallons: "", total_stops: "", status: "" })
-
-  const { data: trips = [], isLoading } = useQuery({
-    queryKey: ["trips"],
-    queryFn: () =>
-      fetch(API + "/trips", {
-        headers: { Authorization: "Bearer " + token }
-      }).then(res => res.json()),
-  })
-
-  const createMutation = useMutation({
-    mutationFn: (trip) =>
-      fetch(API + "/trips", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({
-          ...trip,
-          total_gallons: parseFloat(trip.total_gallons),
-          total_stops: parseInt(trip.total_stops)
-        })
-      }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["trips"])
-      setNewTrip({ driver_name: "", total_gallons: "", total_stops: "", status: "" })
-    }
-  })
-
-  const updateMutation = useMutation({
-    mutationFn: (trip) =>
-      fetch(API + "/trips/" + trip.id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({
-          ...trip,
-          total_gallons: parseFloat(trip.total_gallons),
-          total_stops: parseInt(trip.total_stops)
-        })
-      }).then(res => res.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["trips"])
-      setEditTrip(null)
-    }
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) =>
-      fetch(API + "/trips/" + id, {
-        method: "DELETE",
-        headers: { Authorization: "Bearer " + token }
-      }).then(res => res.json()),
-    onSuccess: () => queryClient.invalidateQueries(["trips"])
-  })
-
-  const handleLogout = () => {
-    localStorage.removeItem("token")
-    navigate("/login")
-  }
-
+const ChartTip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null
   return (
-    <div style={{ fontFamily: "Arial", minHeight: "100vh", backgroundColor: "transparent" }}>
-
-      {/* Header */}
-      <div style={{ backgroundColor: "#4f46e5", padding: "15px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1 style={{ color: "white", margin: 0, fontSize: "22px" }}>🚗 Trip Summary System</h1>
-        <button style={{ padding: "8px 15px", backgroundColor: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-          onClick={handleLogout}>Logout</button>
-      </div>
-
-      {/* Navigation */}
-      <div style={{ backgroundColor: "#3730a3", padding: "10px 20px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <button style={navBtn} onClick={() => navigate("/dashboard")}>🚗 Trips</button>
-        <button style={navBtn} onClick={() => navigate("/customers")}>👥 Customers</button>
-        <button style={navBtn} onClick={() => navigate("/vendors")}>🏢 Vendors</button>
-        <button style={navBtn} onClick={() => navigate("/products")}>📦 Products</button>
-        <button style={navBtn} onClick={() => navigate("/fees")}>💰 Fees</button>
-        <button style={navBtn} onClick={() => navigate("/taxes")}>📊 Taxes</button>
-        <button style={navBtn} onClick={() => navigate("/documents")}>📄 Documents</button>
-        <button style={navBtn} onClick={() => navigate("/configurations")}>⚙️ Configurations</button>
-        <button style={navBtn} onClick={() => navigate("/templates")}>📋 Templates</button>
-        <button style={navBtn} onClick={() => navigate("/email-settings")}>📧 Email</button>
-      </div>
-
-      <div style={{ padding: "20px" }}>
-        <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-          <h2 style={{ color: "#4f46e5" }}>➕ Add New Trip</h2>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <input style={inputStyle} placeholder="Driver Name" value={newTrip.driver_name}
-              onChange={e => setNewTrip({...newTrip, driver_name: e.target.value})} />
-            <input style={inputStyle} placeholder="Total Gallons" value={newTrip.total_gallons}
-              onChange={e => setNewTrip({...newTrip, total_gallons: e.target.value})} />
-            <input style={inputStyle} placeholder="Total Stops" value={newTrip.total_stops}
-              onChange={e => setNewTrip({...newTrip, total_stops: e.target.value})} />
-            <select style={inputStyle} value={newTrip.status}
-              onChange={e => setNewTrip({...newTrip, status: e.target.value})}>
-              <option value="">Select Status</option>
-              <option value="completed">Completed</option>
-              <option value="incomplete">Incomplete</option>
-              <option value="pending">Pending</option>
-            </select>
-            <button style={btnStyle} onClick={() => createMutation.mutate(newTrip)}>Add Trip</button>
-          </div>
-        </div>
-
-        {editTrip && (
-          <div style={{ backgroundColor: "rgba(255,243,243,0.75)", padding: "20px", borderRadius: "10px", marginBottom: "20px", border: "2px solid #4f46e5" }}>
-            <h2 style={{ color: "#4f46e5" }}>✏️ Edit Trip</h2>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <input style={inputStyle} placeholder="Driver Name" value={editTrip.driver_name}
-                onChange={e => setEditTrip({...editTrip, driver_name: e.target.value})} />
-              <input style={inputStyle} placeholder="Total Gallons" value={editTrip.total_gallons}
-                onChange={e => setEditTrip({...editTrip, total_gallons: e.target.value})} />
-              <input style={inputStyle} placeholder="Total Stops" value={editTrip.total_stops}
-                onChange={e => setEditTrip({...editTrip, total_stops: e.target.value})} />
-              <select style={inputStyle} value={editTrip.status}
-                onChange={e => setEditTrip({...editTrip, status: e.target.value})}>
-                <option value="">Select Status</option>
-                <option value="completed">Completed</option>
-                <option value="incomplete">Incomplete</option>
-                <option value="pending">Pending</option>
-              </select>
-              <button style={btnStyle} onClick={() => updateMutation.mutate(editTrip)}>Save</button>
-              <button style={{...btnStyle, backgroundColor: "gray"}} onClick={() => setEditTrip(null)}>Cancel</button>
-            </div>
-          </div>
-        )}
-
-        <div style={{ backgroundColor: "rgba(255,255,255,0.85)", padding: "20px", borderRadius: "10px" }}>
-          <h2 style={{ color: "#4f46e5" }}>📋 All Trips</h2>
-          {isLoading ? <p>Loading trips...</p> : (
-            <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ backgroundColor: "#4f46e5", color: "white" }}>
-                  <th style={thStyle}>ID</th>
-                  <th style={thStyle}>Driver Name</th>
-                  <th style={thStyle}>Total Gallons</th>
-                  <th style={thStyle}>Total Stops</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trips.map(trip => (
-                  <tr key={trip.id}>
-                    <td style={tdStyle}>{trip.id}</td>
-                    <td style={tdStyle}>{trip.driver_name}</td>
-                    <td style={tdStyle}>{trip.total_gallons}</td>
-                    <td style={tdStyle}>{trip.total_stops}</td>
-                    <td style={tdStyle}>
-                      <span style={{ backgroundColor: trip.status === "completed" ? "green" : "orange", color: "white", padding: "3px 8px", borderRadius: "10px" }}>
-                        {trip.status}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>
-                      <button style={{...btnStyle, backgroundColor: "blue", marginRight: "5px"}} onClick={() => setEditTrip(trip)}>Update</button>
-                      <button style={{...btnStyle, backgroundColor: "red"}} onClick={() => deleteMutation.mutate(trip.id)}>Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 14px", fontSize: 13 }}>
+      <p style={{ color: "var(--text-muted)", marginBottom: 4 }}>{label}</p>
+      <p style={{ color: "var(--accent)", fontWeight: 600 }}>${(payload[0]?.value || 0).toLocaleString()} revenue</p>
+      <p style={{ color: "var(--success)" }}>{payload[1]?.value || 0} trips</p>
     </div>
   )
 }
 
-const navBtn = { padding: "8px 15px", backgroundColor: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "5px", cursor: "pointer", fontSize: "14px" }
-const inputStyle = { padding: "8px", borderRadius: "6px", border: "1px solid #4f46e5", fontSize: "14px" }
-const btnStyle = { padding: "8px 15px", backgroundColor: "#4f46e5", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }
-const thStyle = { padding: "12px", textAlign: "left" }
-const tdStyle = { padding: "10px" }
+export default function Dashboard() {
+  const qc = useQueryClient()
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState("")
+  const [showModal, setShowModal] = useState(false)
+  const [editItem, setEditItem] = useState(null)
+  const [form, setForm] = useState(EMPTY)
 
-export default Dashboard
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["analytics"],
+    queryFn: () => fetch(API + "/analytics/stats", { headers: H() }).then(r => r.json()),
+    refetchInterval: 30000
+  })
+
+  const { data: trips = [], isLoading: tripsLoading } = useQuery({
+    queryKey: ["trips", search, statusFilter],
+    queryFn: () => fetch(API + `/trips?search=${encodeURIComponent(search)}&status=${statusFilter}`, { headers: H() }).then(r => r.json()),
+    keepPreviousData: true
+  })
+
+  const create = useMutation({
+    mutationFn: d => fetch(API + "/trips", { method: "POST", headers: H(), body: JSON.stringify({ ...d, total_gallons: parseFloat(d.total_gallons) || 0, total_stops: parseInt(d.total_stops) || 0, revenue: parseFloat(d.revenue) || 0 }) }).then(r => r.json()),
+    onSuccess: () => { qc.invalidateQueries(["trips"]); qc.invalidateQueries(["analytics"]); toast.success("Trip created!"); setShowModal(false); setForm(EMPTY) }
+  })
+  const upd = useMutation({
+    mutationFn: ({ id, data }) => fetch(API + "/trips/" + id, { method: "PUT", headers: H(), body: JSON.stringify({ ...data, total_gallons: parseFloat(data.total_gallons) || 0, total_stops: parseInt(data.total_stops) || 0, revenue: parseFloat(data.revenue) || 0 }) }).then(r => r.json()),
+    onSuccess: () => { qc.invalidateQueries(["trips"]); qc.invalidateQueries(["analytics"]); toast.success("Trip updated!"); setShowModal(false); setEditItem(null) }
+  })
+  const del = useMutation({
+    mutationFn: id => fetch(API + "/trips/" + id, { method: "DELETE", headers: H() }).then(r => r.json()),
+    onSuccess: () => { qc.invalidateQueries(["trips"]); qc.invalidateQueries(["analytics"]); toast.success("Deleted") }
+  })
+
+  const openCreate = () => { setForm(EMPTY); setEditItem(null); setShowModal(true) }
+  const openEdit = t => { setForm({ ...t }); setEditItem(t); setShowModal(true) }
+  const submit = () => editItem ? upd.mutate({ id: editItem.id, data: form }) : create.mutate(form)
+  const F = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  return (
+    <>
+      <Toaster position="top-right" toastOptions={{ style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" } }} />
+      <Sidebar />
+      <PageLayout>
+        <PageHeader title="Dashboard" subtitle="Welcome back — here's what's happening" action={<Button icon={Plus} onClick={openCreate}>New Trip</Button>} />
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
+          {statsLoading ? [1,2,3,4].map(i => <SkeletonCard key={i} />) : <>
+            <StatCard label="Total Trips" value={stats?.total_trips ?? 0} icon={Fuel} color="var(--accent)" />
+            <StatCard label="Completed" value={stats?.completed_trips ?? 0} icon={TrendingUp} color="var(--success)" />
+            <StatCard label="Customers" value={stats?.total_customers ?? 0} icon={Users} color="var(--warning)" />
+            <StatCard label="Total Revenue" value={"$" + (stats?.total_revenue ?? 0).toLocaleString()} icon={TrendingUp} color="var(--info)" />
+          </>}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16, marginBottom: 24 }}>
+          <Card>
+            <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Revenue Trend</h3>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>Last 6 months</p>
+            {statsLoading ? <div className="skeleton" style={{ height: 200, borderRadius: 8 }} /> : (
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={stats?.revenue_by_month || []} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient>
+                    <linearGradient id="gTrips" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.2} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                  <XAxis dataKey="month" tick={{ fill: "#5c5c78", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#5c5c78", fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTip />} />
+                  <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#gRev)" />
+                  <Area type="monotone" dataKey="trips" stroke="#10b981" strokeWidth={2} fill="url(#gTrips)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </Card>
+          <Card>
+            <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Trip Status</h3>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 16 }}>Current distribution</p>
+            {statsLoading ? <div className="skeleton" style={{ height: 200, borderRadius: 8 }} /> : (
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={(stats?.trips_by_status || []).filter(s => s.value > 0)} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4}>
+                    {(stats?.trips_by_status || []).filter(s => s.value > 0).map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip formatter={(v, n) => [v + " trips", n]} contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                  <Legend iconType="circle" iconSize={8} formatter={v => <span style={{ color: "var(--text-secondary)", fontSize: 12 }}>{v}</span>} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </Card>
+        </div>
+
+        <Card style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>All Trips <span style={{ color: "var(--text-muted)", fontWeight: 400, fontSize: 13 }}>({trips.length})</span></span>
+            <div style={{ display: "flex", gap: 10 }}>
+              <SearchBar value={search} onChange={setSearch} placeholder="Search driver, route..." />
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: "8px 12px", background: "var(--bg-secondary)", border: "1px solid var(--border)", borderRadius: 8, color: "var(--text-secondary)", fontSize: 13, width: "auto" }}>
+                <option value="">All Status</option>
+                {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {tripsLoading ? <SkeletonTable rows={6} /> : trips.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--text-muted)" }}>
+              <Fuel size={44} style={{ margin: "0 auto 14px", display: "block", opacity: 0.2 }} />
+              <p style={{ fontWeight: 500 }}>{search || statusFilter ? "No trips match your search" : "No trips yet"}</p>
+              {!search && !statusFilter && <p style={{ fontSize: 13, marginTop: 4 }}>Click "New Trip" to get started.</p>}
+            </div>
+          ) : (
+            <table>
+              <thead><tr><th>ID</th><th>Driver</th><th>Route</th><th>Gallons</th><th>Revenue</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>{trips.map((t, i) => (
+                <motion.tr key={t.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}>
+                  <td style={{ color: "var(--text-muted)", fontSize: 12 }}>#{t.id}</td>
+                  <td style={{ fontWeight: 500, color: "var(--text-primary)" }}>{t.driver_name}</td>
+                  <td>
+                    {(t.origin || t.destination)
+                      ? <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-secondary)" }}>
+                          <MapPin size={12} style={{ opacity: 0.5, flexShrink: 0 }} />{t.origin || "?"} → {t.destination || "?"}
+                        </div>
+                      : <span style={{ color: "var(--text-muted)", fontSize: 12 }}>—</span>}
+                  </td>
+                  <td>{t.total_gallons?.toLocaleString()} gal</td>
+                  <td style={{ color: "var(--success)", fontWeight: 600 }}>${t.revenue?.toLocaleString()}</td>
+                  <td><Badge color={STATUS_COLORS[t.status] || "var(--text-muted)"}>{t.status?.replace("_", " ")}</Badge></td>
+                  <td><div style={{ display: "flex", gap: 6 }}>
+                    <Button variant="ghost" size="sm" icon={Edit2} onClick={() => openEdit(t)} />
+                    <Button variant="danger" size="sm" icon={Trash2} onClick={() => { if (confirm("Delete this trip?")) del.mutate(t.id) }} />
+                  </div></td>
+                </motion.tr>
+              ))}</tbody>
+            </table>
+          )}
+        </Card>
+
+        <Modal open={showModal} onClose={() => { setShowModal(false); setEditItem(null) }} title={editItem ? "Edit Trip" : "New Trip"}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <Input label="Driver Name" placeholder="e.g. John Smith" value={form.driver_name} onChange={e => F("driver_name", e.target.value)} />
+            <Select label="Status" value={form.status} onChange={e => F("status", e.target.value)}>
+              {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+            </Select>
+            <Input label="Origin" placeholder="City, State" value={form.origin || ""} onChange={e => F("origin", e.target.value)} />
+            <Input label="Destination" placeholder="City, State" value={form.destination || ""} onChange={e => F("destination", e.target.value)} />
+            <Input label="Gallons" type="number" placeholder="0" value={form.total_gallons} onChange={e => F("total_gallons", e.target.value)} />
+            <Input label="Revenue ($)" type="number" placeholder="0.00" value={form.revenue} onChange={e => F("revenue", e.target.value)} />
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>Notes</label>
+            <textarea value={form.notes || ""} onChange={e => F("notes", e.target.value)} placeholder="Optional notes..." style={{ height: 72, resize: "vertical", fontFamily: "inherit" }} />
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <Button variant="secondary" onClick={() => { setShowModal(false); setEditItem(null) }}>Cancel</Button>
+            <Button onClick={submit} disabled={create.isPending || upd.isPending}>
+              {(create.isPending || upd.isPending) ? "Saving..." : editItem ? "Save Changes" : "Create Trip"}
+            </Button>
+          </div>
+        </Modal>
+      </PageLayout>
+    </>
+  )
+}

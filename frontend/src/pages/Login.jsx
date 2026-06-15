@@ -1,148 +1,133 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
+import { motion } from "framer-motion"
+import { Fuel, ArrowRight } from "lucide-react"
 
 const API = "http://localhost:8000"
 
-function Login() {
+export default function Login() {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-
-  // Show error from OAuth callback redirect
   const oauthError = searchParams.get("error")
   const oauthMessages = {
-    google_denied: "You cancelled the Google login.",
+    google_denied: "You cancelled Google login.",
     no_code: "Google login failed — no code returned.",
-    token_exchange_failed: "Could not verify your Google account. Please try again.",
+    token_exchange_failed: "Could not verify your Google account.",
   }
 
   const handleLogin = () => {
-    setError("")
-    setLoading(true)
+    setError(""); setLoading(true)
     const formData = new URLSearchParams()
     formData.append("username", username)
     formData.append("password", password)
-    fetch(`${API}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
-    })
-      .then(res => res.json())
+    fetch(`${API}/login`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: formData.toString() })
+      .then(r => r.json())
       .then(data => {
         setLoading(false)
-        if (data.access_token) {
-          localStorage.setItem("token", data.access_token)
-          navigate("/dashboard")
-        } else {
-          setError("Wrong username or password!")
-        }
+        if (data.access_token) { localStorage.setItem("token", data.access_token); navigate("/dashboard") }
+        else setError("Wrong username or password.")
       })
-      .catch(() => {
-        setLoading(false)
-        setError("Login failed — server not reachable.")
-      })
+      .catch(() => { setLoading(false); setError("Server unreachable.") })
   }
 
-  const handleGoogleLogin = () => {
-    setError("")
-    setLoading(true)
-    // Generate state for CSRF protection
-    const state = crypto.randomUUID()
-    sessionStorage.setItem("oauth_state", state)
-
+  const handleGoogle = () => {
+    setError(""); setLoading(true)
     fetch(`${API}/auth/google/login`)
-      .then(res => res.json())
-      .then(data => {
-        setLoading(false)
-        if (data.auth_url) {
-          window.location.href = data.auth_url
-        } else {
-          setError("Could not start Google login. Check server configuration.")
-        }
-      })
-      .catch(() => {
-        setLoading(false)
-        setError("Could not reach server. Make sure backend is running.")
-      })
+      .then(r => r.json())
+      .then(data => { setLoading(false); if (data.auth_url) window.location.href = data.auth_url; else setError("Google login failed.") })
+      .catch(() => { setLoading(false); setError("Server unreachable.") })
   }
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: "80px" }}>
-      <div style={{
-        backgroundColor: "rgba(255,255,255,0.92)",
-        padding: "40px",
-        borderRadius: "12px",
-        border: "2px solid #4f46e5",
-        width: "320px",
-        boxShadow: "0 8px 32px rgba(79,70,229,0.15)"
-      }}>
-        <h1 style={{ color: "#4f46e5", textAlign: "center", fontSize: "22px" }}>⛽ Trip Summary System</h1>
-        <h2 style={{ textAlign: "center", color: "#4f46e5", fontSize: "18px", marginBottom: "20px" }}>Login</h2>
-
-        {(error || oauthError) && (
-          <p style={{ color: "red", textAlign: "center", fontSize: "13px", marginBottom: "10px" }}>
-            {error || oauthMessages[oauthError] || "Login failed."}
+    <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg-primary)" }}>
+      {/* Left panel */}
+      <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
+        style={{ flex: 1, background: "linear-gradient(135deg, #0f0f1a 0%, #1a1035 100%)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "60px", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "20%", left: "10%", width: 300, height: 300, background: "rgba(99,102,241,0.08)", borderRadius: "50%", filter: "blur(60px)" }} />
+        <div style={{ position: "absolute", bottom: "20%", right: "10%", width: 200, height: 200, background: "rgba(139,92,246,0.08)", borderRadius: "50%", filter: "blur(40px)" }} />
+        <div style={{ position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 48 }}>
+            <div style={{ width: 44, height: 44, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 30px rgba(99,102,241,0.4)" }}>
+              <Fuel size={22} color="white" />
+            </div>
+            <span style={{ fontSize: 20, fontWeight: 700, color: "white" }}>TripSync</span>
+          </div>
+          <h1 style={{ fontSize: 40, fontWeight: 800, color: "white", lineHeight: 1.2, marginBottom: 16 }}>
+            Fuel &amp; Freight<br />
+            <span style={{ background: "linear-gradient(135deg,#6366f1,#a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Management
+            </span>
+          </h1>
+          <p style={{ fontSize: 16, color: "#9191a8", lineHeight: 1.7, maxWidth: 380 }}>
+            Streamline your operations, generate professional invoices, and track deliveries — all in one place.
           </p>
-        )}
-
-        {/* Google Login Button */}
-        <button
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          style={{
-            width: "100%", padding: "11px", marginBottom: "20px",
-            backgroundColor: "white", color: "#333",
-            border: "1px solid #ddd", borderRadius: "6px",
-            cursor: "pointer", fontSize: "14px", fontWeight: "500",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.1)"
-          }}>
-          <svg width="18" height="18" viewBox="0 0 48 48">
-            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          </svg>
-          {loading ? "Redirecting..." : "Continue with Google"}
-        </button>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-          <div style={{ flex: 1, height: "1px", backgroundColor: "#ddd" }} />
-          <span style={{ color: "#999", fontSize: "12px" }}>or sign in with password</span>
-          <div style={{ flex: 1, height: "1px", backgroundColor: "#ddd" }} />
+          <div style={{ display: "flex", gap: 24, marginTop: 40 }}>
+            {[["500+", "Trips Tracked"], ["99%", "Uptime"], ["3x", "Faster Billing"]].map(([v, l]) => (
+              <div key={l}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: "white" }}>{v}</div>
+                <div style={{ fontSize: 12, color: "#5c5c78" }}>{l}</div>
+              </div>
+            ))}
+          </div>
         </div>
+      </motion.div>
 
-        <p style={{ margin: "0 0 5px", fontSize: "14px" }}>Username:</p>
-        <input
-          style={{ width: "100%", padding: "8px", marginBottom: "15px", boxSizing: "border-box", borderRadius: "5px", border: "1px solid #4f46e5" }}
-          value={username} onChange={e => setUsername(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleLogin()}
-        />
-        <p style={{ margin: "0 0 5px", fontSize: "14px" }}>Password:</p>
-        <input
-          style={{ width: "100%", padding: "8px", marginBottom: "20px", boxSizing: "border-box", borderRadius: "5px", border: "1px solid #4f46e5" }}
-          type="password" value={password} onChange={e => setPassword(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleLogin()}
-        />
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          style={{ width: "100%", padding: "10px", backgroundColor: "#4f46e5", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "16px" }}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
+      {/* Right panel */}
+      <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
+        style={{ width: 480, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: "var(--bg-secondary)" }}>
+        <div style={{ width: "100%", maxWidth: 360 }}>
+          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Welcome back</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 32 }}>Sign in to your account to continue</p>
 
-        <p style={{ textAlign: "center", marginTop: "15px", fontSize: "13px" }}>
-          Don't have account?{" "}
-          <span style={{ color: "#4f46e5", cursor: "pointer" }} onClick={() => navigate("/register")}>
-            Register here
-          </span>
-        </p>
-      </div>
+          {(error || oauthError) && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#ef4444" }}>
+              {error || oauthMessages[oauthError] || "Login failed."}
+            </motion.div>
+          )}
+
+          {/* Google Button */}
+          <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleGoogle} disabled={loading}
+            style={{ width: "100%", padding: "11px 16px", background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500, color: "var(--text-primary)", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 20, transition: "all 0.15s" }}>
+            <svg width="18" height="18" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continue with Google
+          </motion.button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            <span style={{ fontSize: 12, color: "var(--text-muted)" }}>or continue with password</span>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          </div>
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>Username</label>
+            <input value={username} onChange={e => setUsername(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} placeholder="Enter username" />
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "var(--text-secondary)", marginBottom: 6 }}>Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && handleLogin()} placeholder="Enter password" />
+          </div>
+
+          <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleLogin} disabled={loading}
+            style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 600, color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(99,102,241,0.3)" }}>
+            {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight size={16} /></>}
+          </motion.button>
+
+          <p style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--text-muted)" }}>
+            No account?{" "}
+            <span style={{ color: "var(--accent)", cursor: "pointer", fontWeight: 500 }} onClick={() => navigate("/register")}>Create one</span>
+          </p>
+        </div>
+      </motion.div>
     </div>
   )
 }
-
-export default Login
