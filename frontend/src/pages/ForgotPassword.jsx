@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Leaf, Mail, ArrowLeft, CheckCircle } from "lucide-react"
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 export default function ForgotPassword() {
   const navigate = useNavigate()

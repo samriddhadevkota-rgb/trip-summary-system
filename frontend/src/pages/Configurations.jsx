@@ -5,7 +5,7 @@ import { Plus, X, Settings, Truck } from "lucide-react"
 import Sidebar from "../components/Sidebar"
 import { PageLayout, PageHeader, Card, Button, Badge, Select, Input, SkeletonTable } from "../components/UI"
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
 
 const EMPTY_INV = { customer_id:"", shipto_id:"", invoice_time:"08:00", products:[{product_id:"",quantity:0,rate:0}], fees:[{fee_id:"",quantity:1,rate:0}], taxes:[{tax_id:""}] }

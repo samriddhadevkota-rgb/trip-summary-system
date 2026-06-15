@@ -5,7 +5,7 @@ import { Edit2, Trash2, FileText } from "lucide-react"
 import Sidebar from "../components/Sidebar"
 import { PageLayout, PageHeader, Card, Button, Badge, Select, SkeletonTable } from "../components/UI"
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
 
 const FIELDS = {

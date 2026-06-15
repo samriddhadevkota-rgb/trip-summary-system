@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Leaf, Lock, CheckCircle, AlertCircle } from "lucide-react"
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 export default function ResetPassword() {
   const navigate = useNavigate()

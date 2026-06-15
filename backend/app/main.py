@@ -1,6 +1,8 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -28,7 +30,6 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
-import os
 _allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174,http://localhost:3000").split(",")
 
 app.add_middleware(
@@ -70,10 +71,21 @@ def startup_event():
 def shutdown_event():
     stop_scheduler()
 
-@app.get("/")
-async def root():
-    return {"status": "ok", "version": "2.0.0", "message": "TripSync API is running"}
-
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+# Serve the built React app (only when static/ folder exists — i.e. in production)
+_static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
+if os.path.isdir(_static_dir):
+    _assets_dir = os.path.join(_static_dir, "assets")
+    if os.path.isdir(_assets_dir):
+        app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        return FileResponse(os.path.join(_static_dir, "index.html"))
+else:
+    @app.get("/")
+    async def root():
+        return {"status": "ok", "version": "2.0.0", "message": "TripSync API is running"}
