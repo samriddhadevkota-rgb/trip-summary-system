@@ -4,7 +4,7 @@ import toast, { Toaster } from "react-hot-toast"
 import { Plus, Edit2, Trash2, Percent } from "lucide-react"
 import Sidebar from "../components/Sidebar"
 import { PageLayout, PageHeader, Card, Button, Badge, Modal, Input, SearchBar, SkeletonTable } from "../components/UI"
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
 const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
 const EMPTY = { name: "", percentage: "" }
 export default function Taxes() {

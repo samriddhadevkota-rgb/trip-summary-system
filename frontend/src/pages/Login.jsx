@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Fuel, ArrowRight } from "lucide-react"
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 export default function Login() {
   const [username, setUsername] = useState("")

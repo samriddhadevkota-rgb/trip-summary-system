@@ -5,7 +5,7 @@ import { FileText, Download, Mail, Clock, Zap } from "lucide-react"
 import Sidebar from "../components/Sidebar"
 import { PageLayout, PageHeader, Card, Button, Badge, Input, SkeletonTable } from "../components/UI"
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
 const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
 
 const TYPE_COLORS = { invoice: "var(--accent)", delivery_ticket: "var(--success)", freight_invoice: "var(--warning)" }

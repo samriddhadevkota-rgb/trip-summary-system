@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 import Sidebar from "../components/Sidebar"
 import { PageLayout, PageHeader, Card, StatCard, Button, Badge, Modal, Input, Select, SearchBar, SkeletonCard, SkeletonTable } from "../components/UI"
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
 const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
 const STATUS_COLORS = { completed: "var(--success)", pending: "var(--warning)", in_progress: "var(--accent)", cancelled: "var(--danger)" }
 const STATUS_OPTIONS = ["pending", "in_progress", "completed", "cancelled"]

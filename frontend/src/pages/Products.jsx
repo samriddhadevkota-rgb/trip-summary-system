@@ -5,7 +5,7 @@ import { Plus, Edit2, Trash2, Package, Tag } from "lucide-react"
 import Sidebar from "../components/Sidebar"
 import { PageLayout, PageHeader, Card, Button, Badge, Modal, Input, Select, SearchBar, SkeletonTable } from "../components/UI"
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000"
 const H = () => ({ Authorization: "Bearer " + localStorage.getItem("token"), "Content-Type": "application/json" })
 
 export default function Products() {
