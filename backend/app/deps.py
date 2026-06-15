@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "trip-summary-secret-key")
+# Must match the key used in auth.py to sign tokens
+_AUTH_HARDCODED = "trip-summary-secret-key"
+SECRET_KEY = _AUTH_HARDCODED  # use same key as auth route
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")

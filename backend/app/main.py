@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.database import engine, Base
 from app.models import trip, user, customer, vendor, product, fee_tax, configuration
-from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth, analytics
+from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth, analytics, portal
 from app.services.scheduler import start_scheduler, stop_scheduler
 import logging
 
@@ -46,6 +46,7 @@ app.include_router(templates.router)
 app.include_router(settings.router)
 app.include_router(oauth.router)
 app.include_router(analytics.router)
+app.include_router(portal.router)
 
 @app.on_event("startup")
 def startup_event():

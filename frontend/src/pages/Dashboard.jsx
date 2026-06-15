@@ -71,10 +71,10 @@ export default function Dashboard() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
           {statsLoading ? [1,2,3,4].map(i => <SkeletonCard key={i} />) : <>
-            <StatCard label="Total Trips" value={stats?.total_trips ?? 0} icon={Fuel} color="var(--accent)" />
-            <StatCard label="Completed" value={stats?.completed_trips ?? 0} icon={TrendingUp} color="var(--success)" />
-            <StatCard label="Customers" value={stats?.total_customers ?? 0} icon={Users} color="var(--warning)" />
-            <StatCard label="Total Revenue" value={"$" + (stats?.total_revenue ?? 0).toLocaleString()} icon={TrendingUp} color="var(--info)" />
+            <StatCard label="Total Trips" value={stats?.total_trips ?? 0} icon={Fuel} color="var(--accent)" delay={0} />
+            <StatCard label="Completed" value={stats?.completed_trips ?? 0} icon={TrendingUp} color="var(--success)" delay={0.07} />
+            <StatCard label="Customers" value={stats?.total_customers ?? 0} icon={Users} color="var(--warning)" delay={0.14} />
+            <StatCard label="Total Revenue" value={"$" + (stats?.total_revenue ?? 0).toLocaleString()} icon={TrendingUp} color="var(--info)" delay={0.21} />
           </>}
         </div>
 
@@ -86,14 +86,14 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={stats?.revenue_by_month || []} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} /><stop offset="95%" stopColor="#6366f1" stopOpacity={0} /></linearGradient>
+                    <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
                     <linearGradient id="gTrips" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.2} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
                   <XAxis dataKey="month" tick={{ fill: "#5c5c78", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: "#5c5c78", fontSize: 12 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} />
-                  <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#gRev)" />
+                  <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} fill="url(#gRev)" />
                   <Area type="monotone" dataKey="trips" stroke="#10b981" strokeWidth={2} fill="url(#gTrips)" />
                 </AreaChart>
               </ResponsiveContainer>

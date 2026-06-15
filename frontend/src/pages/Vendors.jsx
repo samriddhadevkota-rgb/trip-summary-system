@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import toast, { Toaster } from "react-hot-toast"
 import { Plus, Edit2, Trash2, Truck } from "lucide-react"
@@ -35,7 +36,7 @@ export default function Vendors() {
         ) : <table>
           <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Address</th><th>Actions</th></tr></thead>
           <tbody>{filtered.map(item=>(
-            <tr key={item.id}>
+            <motion.tr key={item.id} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{delay:0}}>
               <td style={{color:"var(--text-muted)",fontSize:12}}>#{item.id}</td>
               <td style={{color:"var(--text-primary)",fontWeight:500}}>{item.name}</td>
               <td>{item.email}</td>
@@ -44,7 +45,7 @@ export default function Vendors() {
                 <Button variant="ghost" size="sm" icon={Edit2} onClick={()=>openEdit(item)} />
                 <Button variant="danger" size="sm" icon={Trash2} onClick={()=>{if(confirm("Delete?"))del.mutate(item.id)}} />
               </div></td>
-            </tr>
+            </motion.tr>
           ))}</tbody>
         </table>}
       </Card>
