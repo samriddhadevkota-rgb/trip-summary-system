@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Leaf, ArrowRight } from "lucide-react"
 import FuelScene from "../components/FuelScene"
+import TripLoadingAnimation from "../components/TripLoadingAnimation"
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
@@ -44,6 +45,7 @@ export default function Login() {
   }
 
   return (
+    <TripLoadingAnimation loading={false}>
     <div style={{ width: "100%", minHeight: "100vh", display: "flex", background: "var(--bg-primary)" }}>
       {/* Left panel — premium mesh background + fuel scene */}
       <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
@@ -135,5 +137,6 @@ export default function Login() {
         </div>
       </motion.div>
     </div>
+    </TripLoadingAnimation>
   )
 }
