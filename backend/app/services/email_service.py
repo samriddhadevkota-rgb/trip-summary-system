@@ -1,5 +1,6 @@
 import smtplib
 import socket
+import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -21,7 +22,7 @@ EMAIL_SETTINGS = {
     "email": os.getenv("SMTP_EMAIL", ""),
     "password": os.getenv("SMTP_PASSWORD", ""),
     "smtp_server": os.getenv("SMTP_SERVER", "smtp.gmail.com"),
-    "smtp_port": int(os.getenv("SMTP_PORT", "587")),
+    "smtp_port": int(os.getenv("SMTP_PORT", "465")),
 }
 
 def configure_email(email: str, password: str):
@@ -48,10 +49,16 @@ def send_email_with_attachment(to_email: str, subject: str, body: str, attachmen
                 )
                 msg.attach(part)
 
-        with smtplib.SMTP(EMAIL_SETTINGS["smtp_server"], EMAIL_SETTINGS["smtp_port"]) as server:
-            server.starttls()
-            server.login(EMAIL_SETTINGS["email"], EMAIL_SETTINGS["password"])
-            server.send_message(msg)
+        port = EMAIL_SETTINGS["smtp_port"]
+        if port == 465:
+            with smtplib.SMTP_SSL(EMAIL_SETTINGS["smtp_server"], port, timeout=15, context=ssl.create_default_context()) as server:
+                server.login(EMAIL_SETTINGS["email"], EMAIL_SETTINGS["password"])
+                server.send_message(msg)
+        else:
+            with smtplib.SMTP(EMAIL_SETTINGS["smtp_server"], port, timeout=15) as server:
+                server.starttls()
+                server.login(EMAIL_SETTINGS["email"], EMAIL_SETTINGS["password"])
+                server.send_message(msg)
 
         print(f"Email sent to {to_email}")
         return True
