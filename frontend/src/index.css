@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -37,6 +37,7 @@
   --gradient-premium: linear-gradient(135deg, #0d9668 0%, #0b7d57 55%, #065f43 100%);
   --gradient-gold: linear-gradient(135deg, #f0cf8e 0%, #d4af6a 50%, #a9803f 100%);
   --gradient-mesh: radial-gradient(at 20% 0%, rgba(13,150,104,0.28) 0px, transparent 55%), radial-gradient(at 80% 15%, rgba(212,175,106,0.18) 0px, transparent 55%), radial-gradient(at 30% 100%, rgba(13,150,104,0.20) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(212,175,106,0.10) 0px, transparent 50%);
+  --font-display: 'Fraunces', Georgia, serif;
 }
 
 html { font-size: 15px; scroll-behavior: smooth; }
@@ -186,6 +187,57 @@ tbody tr:last-child td { border-bottom: none; }
 }
 .premium-card:hover::before { opacity: 1; }
 .premium-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* Film-grain texture — the single highest-leverage "expensive site" trick */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Cursor-reactive spotlight glow — set --mx/--my via JS mousemove */
+.spotlight { position: relative; isolation: isolate; }
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  background: radial-gradient(480px circle at var(--mx, 50%) var(--my, 50%), rgba(212,175,106,0.10), transparent 60%);
+}
+.spotlight:hover::after { opacity: 1; }
+
+/* Animated rotating gradient border for the most premium elements */
+@property --border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+@keyframes borderRotate { to { --border-angle: 360deg; } }
+.gradient-border {
+  position: relative;
+  border-radius: inherit;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(from var(--border-angle), var(--gold-dark), var(--gold-bright), var(--accent-bright), var(--gold-dark));
+  animation: borderRotate 5s linear infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Editorial serif treatment for headlines and big numerals */
+.font-display { font-family: var(--font-display); font-feature-settings: "ss01" 1; }
+.serif-numeral { font-family: var(--font-display); font-weight: 600; font-variant-numeric: oldstyle-nums; letter-spacing: -0.01em; }
 
 /* Ambient animated mesh background for richness */
 .mesh-bg {

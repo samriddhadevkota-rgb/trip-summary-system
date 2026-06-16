@@ -46,7 +46,7 @@ export default function Checkout() {
           <ArrowLeft size={14} /> Back to home
         </button>
 
-        <div className="glass premium-card" style={{ borderRadius: "var(--radius)", padding: 36 }}>
+        <div className="glass premium-card gradient-border" style={{ borderRadius: "var(--radius)", padding: 36 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
             <div style={{ width: 40, height: 40, background: "var(--gradient-gold)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Leaf size={20} color="#1a1306" />
@@ -58,7 +58,7 @@ export default function Checkout() {
           </div>
 
           <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 24 }}>
-            <span className="gold-text" style={{ fontSize: 48, fontWeight: 800 }}>$20</span>
+            <span className="gold-text serif-numeral" style={{ fontSize: 52 }}>$20</span>
             <span style={{ color: "var(--text-muted)", fontSize: 15 }}>/month</span>
           </div>
 

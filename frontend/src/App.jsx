@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
 import Login from "./pages/Login"
@@ -65,9 +66,22 @@ function AnimatedRoutes() {
   )
 }
 
+function useSpotlightTracking() {
+  useEffect(() => {
+    const handler = (e) => {
+      document.documentElement.style.setProperty("--mx", `${e.clientX}px`)
+      document.documentElement.style.setProperty("--my", `${e.clientY}px`)
+    }
+    window.addEventListener("pointermove", handler)
+    return () => window.removeEventListener("pointermove", handler)
+  }, [])
+}
+
 export default function App() {
+  useSpotlightTracking()
   return (
     <BrowserRouter>
+      <div className="grain-overlay" />
       <AnimatedRoutes />
     </BrowserRouter>
   )

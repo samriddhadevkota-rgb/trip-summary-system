@@ -59,7 +59,7 @@ export default function Landing() {
               <Zap size={12} /> Now with Google OAuth & Auto-PDF Generation
             </div>
 
-            <h1 style={{ fontSize: "clamp(34px, 5vw, 60px)", fontWeight: 800, lineHeight: 1.12, marginBottom: 22, color: "var(--text-primary)" }}>
+            <h1 className="font-display" style={{ fontSize: "clamp(38px, 5.5vw, 68px)", fontWeight: 600, fontStyle: "italic", lineHeight: 1.08, letterSpacing: "-0.02em", marginBottom: 22, color: "var(--text-primary)" }}>
               Fuel &amp; Freight<br />
               <span className="gold-text">Management</span>
               {" "}Made Simple
@@ -83,7 +83,7 @@ export default function Landing() {
             <div style={{ display: "flex", gap: 40, marginTop: 56, flexWrap: "wrap" }}>
               {STATS.map(([v, l]) => (
                 <div key={l}>
-                  <div style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)" }}>{v}</div>
+                  <div className="serif-numeral" style={{ fontSize: 30, color: "var(--text-primary)" }}>{v}</div>
                   <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{l}</div>
                 </div>
               ))}
@@ -100,13 +100,13 @@ export default function Landing() {
       {/* Features */}
       <section style={{ padding: "60px 40px 80px", maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <h2 style={{ fontSize: 34, fontWeight: 800, marginBottom: 12, color: "var(--text-primary)" }}>Everything you need</h2>
+          <h2 className="font-display" style={{ fontSize: 38, fontWeight: 600, fontStyle: "italic", marginBottom: 12, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>Everything you need</h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 16 }}>Built for fuel distributors and freight companies who demand the best.</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
           {FEATURES.map((f, i) => (
             <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} viewport={{ once: true }}
-              className="premium-card" style={{ padding: 24 }}>
+              className="premium-card spotlight" style={{ padding: 24 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: `${f.color}18`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <f.icon size={22} color={f.color} />
               </div>
@@ -120,17 +120,18 @@ export default function Landing() {
       {/* Pricing */}
       <section style={{ padding: "60px 40px 80px", maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <h2 style={{ fontSize: 34, fontWeight: 800, marginBottom: 12, color: "var(--text-primary)" }}>Simple, transparent pricing</h2>
+          <h2 className="font-display" style={{ fontSize: 38, fontWeight: 600, fontStyle: "italic", marginBottom: 12, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>Simple, transparent pricing</h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 16 }}>No hidden fees. Cancel anytime.</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           {PLANS.map((plan, i) => (
             <motion.div key={plan.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} viewport={{ once: true }}
+              className={plan.highlight ? "gradient-border spotlight" : "spotlight"}
               style={{
                 background: plan.highlight ? "linear-gradient(160deg, rgba(212,175,106,0.10), rgba(13,150,104,0.06))" : "var(--bg-card)",
-                border: `1px solid ${plan.highlight ? "var(--gold)" : "var(--border)"}`,
+                border: `1px solid ${plan.highlight ? "transparent" : "var(--border)"}`,
                 borderRadius: 16, padding: 28, position: "relative",
-                boxShadow: plan.highlight ? "0 0 0 1px rgba(212,175,106,0.15), 0 20px 50px rgba(0,0,0,0.4)" : "none",
+                boxShadow: plan.highlight ? "0 20px 60px rgba(212,175,106,0.12), 0 20px 50px rgba(0,0,0,0.4)" : "none",
               }}>
               {plan.highlight && <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "var(--gradient-gold)", color: "#1a1306", fontSize: 11, fontWeight: 700, padding: "4px 14px", borderRadius: 20 }}>MOST POPULAR</div>}
               <div style={{ marginBottom: 20 }}>
@@ -138,7 +139,7 @@ export default function Landing() {
                 <p style={{ fontSize: 13, color: "var(--text-muted)" }}>{plan.desc}</p>
               </div>
               <div style={{ marginBottom: 24 }}>
-                <span style={{ fontSize: 40, fontWeight: 800, color: "var(--text-primary)" }}>{plan.price}</span>
+                <span className="serif-numeral" style={{ fontSize: 44, color: "var(--text-primary)" }}>{plan.price}</span>
                 {plan.price !== "Custom" && <span style={{ color: "var(--text-muted)", fontSize: 14 }}>/month</span>}
               </div>
               <ul style={{ listStyle: "none", marginBottom: 28 }}>
@@ -161,7 +162,7 @@ export default function Landing() {
       <section style={{ padding: "60px 40px 100px", textAlign: "center" }}>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
           style={{ maxWidth: 600, margin: "0 auto", background: "linear-gradient(160deg, rgba(13,150,104,0.12), rgba(212,175,106,0.06))", border: "1px solid var(--border-light)", borderRadius: 20, padding: "60px 40px" }}>
-          <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 16, color: "var(--text-primary)" }}>Ready to get started?</h2>
+          <h2 className="font-display" style={{ fontSize: 36, fontWeight: 600, fontStyle: "italic", marginBottom: 16, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>Ready to get started?</h2>
           <p style={{ color: "var(--text-secondary)", fontSize: 16, marginBottom: 32 }}>Join businesses using TripSync to streamline their operations.</p>
           <button onClick={() => navigate("/register")}
             style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 32px", background: "var(--gradient-premium)", color: "#06120c", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 16, fontWeight: 700, boxShadow: "0 8px 32px rgba(13,150,104,0.4)" }}>

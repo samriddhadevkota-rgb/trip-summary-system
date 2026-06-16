@@ -82,8 +82,8 @@ export function StatCard({ label, value, icon: Icon, color = "var(--accent)", tr
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: 10 }}>{label}</p>
-          <motion.p key={display} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-            style={{ fontSize: 30, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.04em" }}>
+          <motion.p key={display} className="serif-numeral" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            style={{ fontSize: 32, color: "var(--text-primary)" }}>
             {display}
           </motion.p>
           {trend !== undefined && (
