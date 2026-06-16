@@ -1,72 +1,53 @@
-import smtplib
-import socket
-import ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
+import base64
 import os
+import requests
 from app.database import SessionLocal
 from app.models.configuration import InvoiceConfiguration
 
-# Some cloud hosts (e.g. Railway) advertise IPv6 but have no real route to the
-# internet over it, so smtplib's default getaddrinfo() can return an IPv6
-# address for smtp.gmail.com and fail with "Network is unreachable". Force
-# IPv4-only resolution so the SMTP connection always uses a reachable address.
-_orig_getaddrinfo = socket.getaddrinfo
-def _ipv4_only_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-    return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-socket.getaddrinfo = _ipv4_only_getaddrinfo
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+RESEND_FROM = os.getenv("RESEND_FROM", "TripSync <onboarding@resend.dev>")
 
 EMAIL_SETTINGS = {
     "email": os.getenv("SMTP_EMAIL", ""),
-    "password": os.getenv("SMTP_PASSWORD", ""),
-    "smtp_server": os.getenv("SMTP_SERVER", "smtp.gmail.com"),
-    "smtp_port": int(os.getenv("SMTP_PORT", "465")),
 }
 
-def configure_email(email: str, password: str):
+def configure_email(email: str, password: str = ""):
     EMAIL_SETTINGS["email"] = email
-    EMAIL_SETTINGS["password"] = password
 
 def send_email_with_attachment(to_email: str, subject: str, body: str, attachment_path: str):
+    if not RESEND_API_KEY:
+        print("Email failed: RESEND_API_KEY not configured")
+        return False
+
+    payload = {
+        "from": RESEND_FROM,
+        "to": [to_email],
+        "subject": subject,
+        "text": body,
+    }
+
+    if attachment_path and os.path.exists(attachment_path):
+        with open(attachment_path, "rb") as f:
+            content = base64.b64encode(f.read()).decode("utf-8")
+        payload["attachments"] = [{
+            "filename": os.path.basename(attachment_path),
+            "content": content,
+        }]
+
     try:
-        msg = MIMEMultipart()
-        msg["From"] = EMAIL_SETTINGS["email"]
-        msg["To"] = to_email
-        msg["Subject"] = subject
-
-        msg.attach(MIMEText(body, "plain"))
-
-        if attachment_path and os.path.exists(attachment_path):
-            with open(attachment_path, "rb") as f:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(f.read())
-                encoders.encode_base64(part)
-                part.add_header(
-                    "Content-Disposition",
-                    f"attachment; filename={os.path.basename(attachment_path)}"
-                )
-                msg.attach(part)
-
-        port = EMAIL_SETTINGS["smtp_port"]
-        if port == 465:
-            with smtplib.SMTP_SSL(EMAIL_SETTINGS["smtp_server"], port, timeout=15, context=ssl.create_default_context()) as server:
-                server.login(EMAIL_SETTINGS["email"], EMAIL_SETTINGS["password"])
-                server.send_message(msg)
-        else:
-            with smtplib.SMTP(EMAIL_SETTINGS["smtp_server"], port, timeout=15) as server:
-                server.starttls()
-                server.login(EMAIL_SETTINGS["email"], EMAIL_SETTINGS["password"])
-                server.send_message(msg)
-
-        print(f"Email sent to {to_email}")
-        return True
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+            json=payload,
+            timeout=15,
+        )
+        if resp.status_code in (200, 201, 202):
+            print(f"Email sent to {to_email}")
+            return True
+        print(f"Email failed: {resp.status_code} {resp.text}")
+        return False
     except Exception as e:
-        if not EMAIL_SETTINGS["email"] or not EMAIL_SETTINGS["password"]:
-            print("Email failed: SMTP_EMAIL / SMTP_PASSWORD not configured")
-        else:
-            print(f"Email failed: {e}")
+        print(f"Email failed: {e}")
         return False
 
 def send_invoice_email(config_id: int, pdf_path: str):
