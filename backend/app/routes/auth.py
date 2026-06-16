@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -16,6 +17,7 @@ router = APIRouter()
 SECRET_KEY = "trip-summary-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+FRONTEND_URL = os.getenv("PUBLIC_URL", "http://localhost:5173")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -86,7 +88,7 @@ def forgot_password(email: str, db: Session = Depends(get_db)):
         reset_token = PasswordResetToken(email=email, token=token, expires_at=expires)
         db.add(reset_token)
         db.commit()
-        reset_link = f"http://localhost:5173/reset-password?token={token}"
+        reset_link = f"{FRONTEND_URL}/reset-password?token={token}"
         body = f"""Hi {user.username},
 
 You requested a password reset for your TripSync account.

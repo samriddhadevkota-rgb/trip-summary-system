@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth/google", tags=["google-oauth"])
 
-FRONTEND_URL = "http://localhost:5173"
+FRONTEND_URL = os.getenv("PUBLIC_URL", "http://localhost:5173")
 
 def get_db():
     db = SessionLocal()
