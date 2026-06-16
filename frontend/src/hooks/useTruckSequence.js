@@ -5,12 +5,16 @@ export const PHASE = {
   FUEL: "fuel",
   HOLD: "hold",
   EXIT: "exit",
+  JOURNEY: "journey",
+  ARRIVE: "arrive",
   DONE: "done",
 }
 
 const ENTER_MS = 1700
 const FUEL_MS = 2200
-const EXIT_MS = 1500
+const EXIT_MS = 900
+const JOURNEY_MS = 2300
+const ARRIVE_MS = 1900
 
 // Pure state machine for the loading sequence - no rendering, just phase + progress.
 // Always plays the full enter -> fuel sequence even if data resolves instantly,
@@ -56,7 +60,19 @@ export function useTruckSequence(loading, { reducedMotion = false } = {}) {
 
   useEffect(() => {
     if (phase !== PHASE.EXIT) return
-    const t = setTimeout(() => setPhase(PHASE.DONE), EXIT_MS)
+    const t = setTimeout(() => setPhase(PHASE.JOURNEY), EXIT_MS)
+    return () => clearTimeout(t)
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== PHASE.JOURNEY) return
+    const t = setTimeout(() => setPhase(PHASE.ARRIVE), JOURNEY_MS)
+    return () => clearTimeout(t)
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== PHASE.ARRIVE) return
+    const t = setTimeout(() => setPhase(PHASE.DONE), ARRIVE_MS)
     return () => clearTimeout(t)
   }, [phase])
 

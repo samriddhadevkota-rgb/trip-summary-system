@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useState } from "react"
 import { createPortal } from "react-dom"
 import { AnimatePresence, motion } from "framer-motion"
-import { Leaf } from "lucide-react"
+import { Leaf, Users, BarChart3, FileText, Receipt } from "lucide-react"
 import { PHASE, useTruckSequence } from "../hooks/useTruckSequence"
 
 const STATION_X = 480
 const ENTER_X = -220
-const EXIT_X = 760
+const EXIT_TARGET_X = 640
+const JOURNEY_TARGET_X = 920
+const DEST_MARKER_X = 950
+
+const ARRIVE_ITEMS = [
+  { icon: Users, label: "Customers" },
+  { icon: BarChart3, label: "Analytics" },
+  { icon: FileText, label: "PDF Reports" },
+  { icon: Receipt, label: "Invoices" },
+]
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false)
@@ -94,6 +103,67 @@ function FuelHose({ active, fueling }) {
   )
 }
 
+function Mountains() {
+  return (
+    <g opacity="0.85">
+      <path d="M-50,300 L120,190 L260,300 Z" fill="#111513" style={{ animation: "cloudDrift 26s linear infinite alternate" }} />
+      <path d="M150,300 L340,210 L520,300 Z" fill="#161b18" style={{ animation: "cloudDrift 19s linear infinite alternate-reverse" }} />
+      <path d="M500,300 L680,225 L880,300 Z" fill="#111513" style={{ animation: "cloudDrift 22s linear infinite alternate" }} />
+      <path d="M780,300 L940,200 L1100,300 Z" fill="#161b18" style={{ animation: "cloudDrift 16s linear infinite alternate-reverse" }} />
+    </g>
+  )
+}
+
+function DestinationMarker({ visible }) {
+  return (
+    <motion.g
+      transform={`translate(${DEST_MARKER_X},300)`}
+      style={{ transformOrigin: "0px 0px" }}
+      initial={{ opacity: 0, scale: 0.5, y: 10 }}
+      animate={visible ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.5, y: 10 }}
+      transition={{ type: "spring", stiffness: 260, damping: 18 }}
+    >
+      <ellipse cx="0" cy="2" rx="22" ry="6" fill="var(--gold)" opacity="0.18" />
+      <line x1="0" y1="0" x2="0" y2="-58" stroke="#aab8af" strokeWidth="3" />
+      <path d="M0,-58 L34,-48 L0,-38 Z" fill="var(--gold-bright)" />
+      <circle cx="0" cy="-58" r="4" fill="#f3f6f3" />
+    </motion.g>
+  )
+}
+
+function DestinationIcons() {
+  return (
+    <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+      {ARRIVE_ITEMS.map((item, i) => (
+        <motion.div key={item.label}
+          initial={{ opacity: 0, y: 18, scale: 0.6 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 16, delay: i * 0.12 }}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, position: "relative" }}
+        >
+          {[0, 1, 2].map(p => (
+            <motion.div key={p}
+              animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.8 + p * 0.3, repeat: Infinity, delay: p * 0.25, ease: "easeInOut" }}
+              style={{ position: "absolute", top: -6, left: 6 + p * 14, width: 4, height: 4, borderRadius: "50%", background: "var(--gold-bright)" }}
+            />
+          ))}
+          <div style={{
+            width: 56, height: 56, borderRadius: 16, position: "relative",
+            background: "var(--bg-card)", border: "1px solid var(--border)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 24px rgba(13,150,104,0.25)",
+          }}>
+            <div style={{ position: "absolute", inset: -8, borderRadius: 20, background: "var(--accent-glow)", filter: "blur(8px)", zIndex: -1 }} />
+            <item.icon size={24} color="var(--accent-bright)" />
+          </div>
+          <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 600 }}>{item.label}</span>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
 function StarsAndClouds() {
   const stars = useMemo(() => Array.from({ length: 22 }, (_, i) => ({
     cx: (i * 47 + 13) % 1000,
@@ -116,9 +186,14 @@ function StarsAndClouds() {
 }
 
 function TruckScene({ phase, fuelPercent }) {
-  const moving = phase === PHASE.ENTER || phase === PHASE.EXIT
+  const moving = phase === PHASE.ENTER || phase === PHASE.EXIT || phase === PHASE.JOURNEY
   const fueling = phase === PHASE.FUEL || phase === PHASE.HOLD
-  const truckX = phase === PHASE.EXIT ? EXIT_X : phase === PHASE.ENTER ? STATION_X : STATION_X
+  const speeding = phase === PHASE.EXIT || phase === PHASE.JOURNEY
+  const markerVisible = phase === PHASE.JOURNEY || phase === PHASE.ARRIVE
+  const truckX =
+    phase === PHASE.EXIT ? EXIT_TARGET_X :
+    (phase === PHASE.JOURNEY || phase === PHASE.ARRIVE) ? JOURNEY_TARGET_X :
+    STATION_X
 
   return (
     <motion.div
@@ -140,26 +215,39 @@ function TruckScene({ phase, fuelPercent }) {
             <stop offset="0%" stopColor="#fffbe6" stopOpacity="0.9" />
             <stop offset="100%" stopColor="#fffbe6" stopOpacity="0" />
           </radialGradient>
+          <filter id="speedBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3.2 0" />
+          </filter>
         </defs>
 
         <rect width="1000" height="380" fill="url(#skyGrad)" />
         <StarsAndClouds />
 
-        {/* road */}
-        <rect x="0" y="300" width="1000" height="80" fill="#0c0f0d" />
-        <rect x="0" y="300" width="1000" height="3" fill="#232b26" />
-        <line x1="-40" y1="338" x2="1040" y2="338" stroke="var(--gold)" strokeOpacity="0.5" strokeWidth="3" strokeDasharray="30 24"
-          style={{ animation: moving ? "roadScroll 0.5s linear infinite" : "none" }} />
+        {/* world layer: pans slightly during the journey for a camera-follow feel */}
+        <motion.g
+          animate={{ x: phase === PHASE.JOURNEY ? -50 : phase === PHASE.ARRIVE ? -50 : 0 }}
+          transition={{ duration: phase === PHASE.JOURNEY ? 2.3 : 0.6, ease: "easeInOut" }}
+        >
+          <Mountains />
 
-        <PetrolStation glowing={fueling} />
-        <FuelHose active={fueling} fueling={phase === PHASE.FUEL} />
+          {/* road */}
+          <rect x="0" y="300" width="1000" height="80" fill="#0c0f0d" />
+          <rect x="0" y="300" width="1000" height="3" fill="#232b26" />
+          <line x1="-40" y1="338" x2="1040" y2="338" stroke="var(--gold)" strokeOpacity="0.5" strokeWidth="3" strokeDasharray="30 24"
+            style={{ animation: moving ? `roadScroll ${speeding ? 0.32 : 0.5}s linear infinite` : "none" }} />
+
+          <PetrolStation glowing={fueling} />
+          <FuelHose active={fueling} fueling={phase === PHASE.FUEL} />
+          <DestinationMarker visible={markerVisible} />
+        </motion.g>
 
         <motion.g
           initial={{ x: ENTER_X }}
-          animate={{ x: truckX }}
+          animate={{ x: truckX, filter: speeding ? "url(#speedBlur)" : "none" }}
           transition={
             phase === PHASE.ENTER ? { duration: 1.7, ease: [0.25, 0.46, 0.45, 0.94] } :
-            phase === PHASE.EXIT ? { duration: 1.5, ease: [0.55, 0, 0.85, 0.35] } :
+            phase === PHASE.EXIT ? { duration: 0.9, ease: [0.45, 0, 0.85, 0.35] } :
+            phase === PHASE.JOURNEY ? { duration: 2.3, ease: "easeInOut" } :
             { type: "spring", stiffness: 300, damping: 14 }
           }
           style={{ transformOrigin: "0px 300px" }}
@@ -242,6 +330,30 @@ export default function TripLoadingAnimation({ loading, skip = false, children }
               )}
             </AnimatePresence>
           )}
+
+          {!reducedMotion && (
+            <AnimatePresence mode="wait">
+              {phase === PHASE.JOURNEY && (
+                <motion.div key="journey-label"
+                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                  style={{ fontSize: 12, color: "var(--text-muted)", letterSpacing: "0.06em" }}
+                >
+                  ON THE ROAD
+                </motion.div>
+              )}
+              {phase === PHASE.ARRIVE && (
+                <motion.div key="arrive-block"
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}
+                >
+                  <div style={{ fontSize: 13, color: "var(--gold-bright)", fontWeight: 700, letterSpacing: "0.04em" }}>
+                    ARRIVED — PREPARING YOUR WORKSPACE
+                  </div>
+                  <DestinationIcons />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
@@ -253,8 +365,8 @@ export default function TripLoadingAnimation({ loading, skip = false, children }
 
       <motion.div
         initial={false}
-        animate={!showOverlay ? { opacity: 1, scale: 1, filter: "blur(0px)" } : { opacity: 0, scale: 0.97, filter: "blur(6px)" }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        animate={!showOverlay ? { opacity: 1, scale: 1, y: 0, filter: "blur(0px)" } : { opacity: 0, scale: 0.97, y: 26, filter: "blur(6px)" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         style={{ visibility: showOverlay ? "hidden" : "visible", width: "100%" }}
       >
         {children}
