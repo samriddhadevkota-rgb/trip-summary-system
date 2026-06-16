@@ -53,8 +53,8 @@ export default function ResetPassword() {
         style={{ width: "100%", maxWidth: 420, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: 36 }}>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg,#10b981,#059669)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Leaf size={18} color="white" />
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--gradient-premium)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Leaf size={18} color="#06120c" />
           </div>
           <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.02em" }}>TripSync</span>
         </div>
@@ -68,7 +68,7 @@ export default function ResetPassword() {
             <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 10 }}>Password updated!</h2>
             <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 24 }}>Your password has been changed. Sign in with your new password.</p>
             <motion.button whileHover={{ scale: 1.02 }} onClick={() => navigate("/login")}
-              style={{ width: "100%", padding: "11px", background: "linear-gradient(135deg,#10b981,#059669)", border: "none", borderRadius: 9, color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+              style={{ width: "100%", padding: "11px", background: "var(--gradient-premium)", border: "none", borderRadius: 9, color: "#06120c", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
               Go to Login
             </motion.button>
           </motion.div>
@@ -100,7 +100,7 @@ export default function ResetPassword() {
                 {confirm && confirm !== password && <p style={{ fontSize: 11, color: "var(--danger)", marginTop: 4 }}>Passwords don't match</p>}
               </div>
               <motion.button type="submit" disabled={loading} whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#10b981,#059669)", border: "none", borderRadius: 9, color: "white", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
+                style={{ width: "100%", padding: "12px", background: "var(--gradient-premium)", border: "none", borderRadius: 9, color: "#06120c", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1 }}>
                 {loading ? "Saving..." : "Reset password"}
               </motion.button>
             </form>

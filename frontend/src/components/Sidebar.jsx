@@ -52,11 +52,11 @@ export default function Sidebar() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36, height: 36,
-            background: "linear-gradient(135deg, #10b981, #059669)",
+            background: "var(--gradient-premium)",
             borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 0 20px rgba(16,185,129,0.4)"
+            boxShadow: "0 0 20px rgba(13,150,104,0.4)"
           }}>
-            <Leaf size={17} color="white" />
+            <Leaf size={17} color="#06120c" />
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 15, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>TripSync</div>

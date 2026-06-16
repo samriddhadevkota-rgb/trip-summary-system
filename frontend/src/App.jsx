@@ -17,6 +17,8 @@ import OAuthCallback from "./pages/OAuthCallback"
 import CustomerPortal from "./pages/CustomerPortal"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
+import Checkout from "./pages/Checkout"
+import CheckoutSuccess from "./pages/CheckoutSuccess"
 
 function Protected({ children }) {
   const token = localStorage.getItem("token")
@@ -44,6 +46,8 @@ function AnimatedRoutes() {
           <Route path="/portal" element={<CustomerPortal />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/dashboard"      element={<Protected><Dashboard /></Protected>} />
           <Route path="/customers"      element={<Protected><Customers /></Protected>} />
           <Route path="/vendors"        element={<Protected><Vendors /></Protected>} />

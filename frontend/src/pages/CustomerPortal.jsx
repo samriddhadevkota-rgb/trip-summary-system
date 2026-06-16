@@ -39,7 +39,7 @@ function PortalDocument({ doc, idx }) {
         </div>
       </div>
       <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={download}
-        style={{ display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#10b981,#059669)", color: "white", border: "none", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+        style={{ display: "flex", alignItems: "center", gap: 7, background: "var(--gradient-premium)", color: "#06120c", border: "none", borderRadius: 9, padding: "9px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
         <Download size={14} /> Download
       </motion.button>
     </motion.div>
@@ -70,8 +70,8 @@ export default function CustomerPortal() {
       {/* Nav */}
       <nav style={{ borderBottom: "1px solid rgba(16,185,129,0.1)", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-          <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg,#10b981,#059669)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Leaf size={17} color="white" />
+          <div style={{ width: 32, height: 32, borderRadius: 9, background: "var(--gradient-premium)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Leaf size={17} color="#06120c" />
           </div>
           <span style={{ fontWeight: 700, fontSize: 15, color: "#ecfdf5", letterSpacing: "-0.02em" }}>TripSync</span>
         </Link>
@@ -110,7 +110,7 @@ export default function CustomerPortal() {
                 style={{ paddingLeft: 40, width: "100%", background: "#0d1410", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 10, padding: "11px 14px 11px 40px", fontSize: 14, color: "#ecfdf5", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
             </div>
             <motion.button type="submit" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-              style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#059669)", color: "white", border: "none", borderRadius: 10, padding: "0 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+              style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--gradient-premium)", color: "#06120c", border: "none", borderRadius: 10, padding: "0 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
               <Search size={14} /> Look Up
             </motion.button>
           </div>

@@ -104,11 +104,11 @@ export function StatCard({ label, value, icon: Icon, color = "var(--accent)", tr
 // ── Button ────────────────────────────────────────────────────────────────────
 export function Button({ children, onClick, variant = "primary", size = "md", icon: Icon, disabled = false, style = {} }) {
   const variants = {
-    primary:   { background: "linear-gradient(135deg,#10b981,#059669)", color: "white", border: "none", boxShadow: "0 4px 16px rgba(16,185,129,0.3)" },
+    primary:   { background: "var(--gradient-premium)", color: "#06120c", border: "none", boxShadow: "0 4px 16px rgba(13,150,104,0.3)" },
     secondary: { background: "var(--bg-hover)", color: "var(--text-primary)", border: "1px solid var(--border)" },
-    danger:    { background: "transparent", color: "var(--danger)", border: "1px solid rgba(239,68,68,0.4)" },
+    danger:    { background: "transparent", color: "var(--danger)", border: "1px solid rgba(229,72,77,0.4)" },
     ghost:     { background: "transparent", color: "var(--text-secondary)", border: "none" },
-    success:   { background: "linear-gradient(135deg,#10b981,#059669)", color: "white", border: "none" },
+    success:   { background: "var(--gradient-premium)", color: "#06120c", border: "none" },
     outline:   { background: "transparent", color: "var(--accent)", border: "1px solid var(--accent)" },
   }
   const sizes = {

@@ -8,10 +8,10 @@ from app.database import SessionLocal
 from app.models.configuration import InvoiceConfiguration
 
 EMAIL_SETTINGS = {
-    "email": "",
-    "password": "",
-    "smtp_server": "smtp.gmail.com",
-    "smtp_port": 587
+    "email": os.getenv("SMTP_EMAIL", ""),
+    "password": os.getenv("SMTP_PASSWORD", ""),
+    "smtp_server": os.getenv("SMTP_SERVER", "smtp.gmail.com"),
+    "smtp_port": int(os.getenv("SMTP_PORT", "587")),
 }
 
 def configure_email(email: str, password: str):
@@ -46,7 +46,10 @@ def send_email_with_attachment(to_email: str, subject: str, body: str, attachmen
         print(f"Email sent to {to_email}")
         return True
     except Exception as e:
-        print(f"Email failed: {e}")
+        if not EMAIL_SETTINGS["email"] or not EMAIL_SETTINGS["password"]:
+            print("Email failed: SMTP_EMAIL / SMTP_PASSWORD not configured")
+        else:
+            print(f"Email failed: {e}")
         return False
 
 def send_invoice_email(config_id: int, pdf_path: str):

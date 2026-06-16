@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Fuel, ArrowRight } from "lucide-react"
+import { Leaf, ArrowRight } from "lucide-react"
+import FuelScene from "../components/FuelScene"
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
@@ -44,48 +45,50 @@ export default function Login() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg-primary)" }}>
-      {/* Left panel */}
+      {/* Left panel — premium mesh background + fuel scene */}
       <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
-        style={{ flex: 1, background: "linear-gradient(135deg, #0f0f1a 0%, #1a1035 100%)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "60px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "20%", left: "10%", width: 300, height: 300, background: "rgba(99,102,241,0.08)", borderRadius: "50%", filter: "blur(60px)" }} />
-        <div style={{ position: "absolute", bottom: "20%", right: "10%", width: 200, height: 200, background: "rgba(139,92,246,0.08)", borderRadius: "50%", filter: "blur(40px)" }} />
-        <div style={{ position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 48 }}>
-            <div style={{ width: 44, height: 44, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 30px rgba(99,102,241,0.4)" }}>
-              <Fuel size={22} color="white" />
+        className="mesh-bg"
+        style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "60px", position: "relative", overflow: "hidden" }}>
+
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 40 }}>
+            <div style={{ width: 44, height: 44, background: "var(--gradient-premium)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 30px rgba(13,150,104,0.45)" }}>
+              <Leaf size={22} color="#06120c" />
             </div>
             <span style={{ fontSize: 20, fontWeight: 700, color: "white" }}>TripSync</span>
           </div>
-          <h1 style={{ fontSize: 40, fontWeight: 800, color: "white", lineHeight: 1.2, marginBottom: 16 }}>
+          <h1 style={{ fontSize: 38, fontWeight: 800, color: "white", lineHeight: 1.2, marginBottom: 16 }}>
             Fuel &amp; Freight<br />
-            <span style={{ background: "linear-gradient(135deg,#6366f1,#a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Management
-            </span>
+            <span className="gold-text">Management</span>
           </h1>
-          <p style={{ fontSize: 16, color: "#9191a8", lineHeight: 1.7, maxWidth: 380 }}>
+          <p style={{ fontSize: 15, color: "var(--text-secondary)", lineHeight: 1.7, maxWidth: 380, marginBottom: 8 }}>
             Streamline your operations, generate professional invoices, and track deliveries — all in one place.
           </p>
-          <div style={{ display: "flex", gap: 24, marginTop: 40 }}>
+          <div style={{ display: "flex", gap: 24, marginTop: 32 }}>
             {[["500+", "Trips Tracked"], ["99%", "Uptime"], ["3x", "Faster Billing"]].map(([v, l]) => (
               <div key={l}>
-                <div style={{ fontSize: 24, fontWeight: 700, color: "white" }}>{v}</div>
-                <div style={{ fontSize: 12, color: "#5c5c78" }}>{l}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: "white" }}>{v}</div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{l}</div>
               </div>
             ))}
           </div>
+        </div>
+
+        <div style={{ position: "absolute", right: -20, bottom: -20, opacity: 0.95, zIndex: 1 }}>
+          <FuelScene />
         </div>
       </motion.div>
 
       {/* Right panel */}
       <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
-        style={{ width: 480, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: "var(--bg-secondary)" }}>
+        style={{ width: 480, display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: "var(--bg-secondary)", borderLeft: "1px solid var(--border)" }}>
         <div style={{ width: "100%", maxWidth: 360 }}>
-          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6 }}>Welcome back</h2>
+          <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 6, color: "var(--text-primary)" }}>Welcome back</h2>
           <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 32 }}>Sign in to your account to continue</p>
 
           {(error || oauthError) && (
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
-              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#ef4444" }}>
+              style={{ background: "rgba(229,72,77,0.1)", border: "1px solid rgba(229,72,77,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: "#e5484d" }}>
               {error || oauthMessages[oauthError] || "Login failed."}
             </motion.div>
           )}
@@ -118,7 +121,7 @@ export default function Login() {
           </div>
 
           <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleLogin} disabled={loading}
-            style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 600, color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 20px rgba(99,102,241,0.3)" }}>
+            style={{ width: "100%", padding: "12px", background: "var(--gradient-premium)", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#06120c", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 24px rgba(13,150,104,0.35)" }}>
             {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight size={16} /></>}
           </motion.button>
 
@@ -127,7 +130,7 @@ export default function Login() {
           </p>
           <p style={{ textAlign: "center", marginTop: 8, fontSize: 13, color: "var(--text-muted)" }}>
             No account?{" "}
-            <span style={{ color: "var(--accent)", cursor: "pointer", fontWeight: 500 }} onClick={() => navigate("/register")}>Create one</span>
+            <span style={{ color: "var(--accent-bright)", cursor: "pointer", fontWeight: 500 }} onClick={() => navigate("/register")}>Create one</span>
           </p>
         </div>
       </motion.div>

@@ -16,6 +16,11 @@ class User(Base):
     oauth_provider = Column(String, nullable=True)
     last_google_sync_at = Column(DateTime, nullable=True)
 
+    # Billing fields
+    plan = Column(String, default="free")
+    stripe_customer_id = Column(String, nullable=True, index=True)
+    subscription_status = Column(String, nullable=True)
+
 
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"

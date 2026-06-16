@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Fuel, CheckCircle, XCircle } from "lucide-react"
+import { Leaf, CheckCircle, XCircle } from "lucide-react"
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams()
@@ -37,8 +37,8 @@ export default function OAuthCallback() {
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}
         style={{ textAlign: "center", padding: 40, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", maxWidth: 340, boxShadow: "var(--shadow-lg)" }}>
 
-        <div style={{ width: 52, height: 52, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", boxShadow: "0 0 30px rgba(99,102,241,0.4)" }}>
-          <Fuel size={24} color="white" />
+        <div style={{ width: 52, height: 52, background: "var(--gradient-premium)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", boxShadow: "0 0 30px rgba(13,150,104,0.4)" }}>
+          <Leaf size={24} color="#06120c" />
         </div>
 
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>TripSync</h2>

@@ -9,7 +9,7 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.limiter import limiter
 from app.database import engine, Base
 from app.models import trip, user, customer, vendor, product, fee_tax, configuration
-from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth, analytics, portal
+from app.routes import trips, auth, customers, vendors, fees_taxes, products, configurations, documents, email_settings, templates, settings, oauth, analytics, portal, billing
 from app.services.scheduler import start_scheduler, stop_scheduler
 import logging
 
@@ -61,6 +61,7 @@ app.include_router(settings.router)
 app.include_router(oauth.router)
 app.include_router(analytics.router)
 app.include_router(portal.router)
+app.include_router(billing.router)
 
 @app.on_event("startup")
 def startup_event():
