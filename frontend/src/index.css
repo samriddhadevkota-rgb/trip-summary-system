@@ -122,6 +122,11 @@ tbody tr:last-child td { border-bottom: none; }
 @keyframes fuelFill  { 0% { transform: scaleY(0); } 60% { transform: scaleY(1.05); } 100% { transform: scaleY(1); } }
 @keyframes floatSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes drift     { 0% { transform: translateX(-6%); } 100% { transform: translateX(106%); } }
+@keyframes wheelSpin  { to { transform: rotate(360deg); } }
+@keyframes twinkle    { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.9; } }
+@keyframes smokePuff  { 0% { opacity: 0.45; transform: translate(0,0) scale(0.6); } 100% { opacity: 0; transform: translate(-34px,-26px) scale(1.7); } }
+@keyframes cloudDrift { from { transform: translateX(0); } to { transform: translateX(-50px); } }
+@keyframes roadScroll { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -54px; } }
 
 .fade-in     { animation: fadeIn 0.3s ease forwards; }
 .fade-in-up  { animation: fadeInUp 0.4s ease forwards; }

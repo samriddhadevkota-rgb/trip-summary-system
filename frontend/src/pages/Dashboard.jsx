@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, Users, Plus, Edit2, Trash2, MapPin, Fuel } from "lucide-react"
 import { motion } from "framer-motion"
 import Sidebar from "../components/Sidebar"
+import TripLoadingAnimation from "../components/TripLoadingAnimation"
 import { PageLayout, PageHeader, Card, StatCard, Button, Badge, Modal, Input, Select, SearchBar, SkeletonCard, SkeletonTable } from "../components/UI"
 
 const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
@@ -26,6 +27,11 @@ const ChartTip = ({ active, payload, label }) => {
 
 export default function Dashboard() {
   const qc = useQueryClient()
+  const [introActive] = useState(() => {
+    const seen = sessionStorage.getItem("tripsync_intro_shown")
+    if (!seen) sessionStorage.setItem("tripsync_intro_shown", "1")
+    return !seen
+  })
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
   const [showModal, setShowModal] = useState(false)
@@ -66,6 +72,7 @@ export default function Dashboard() {
     <>
       <Toaster position="top-right" toastOptions={{ style: { background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border)" } }} />
       <Sidebar />
+      <TripLoadingAnimation loading={statsLoading || tripsLoading} skip={!introActive}>
       <PageLayout>
         <PageHeader title="Dashboard" subtitle="Welcome back — here's what's happening" action={<Button icon={Plus} onClick={openCreate}>New Trip</Button>} />
 
@@ -184,6 +191,7 @@ export default function Dashboard() {
           </div>
         </Modal>
       </PageLayout>
+      </TripLoadingAnimation>
     </>
   )
 }
