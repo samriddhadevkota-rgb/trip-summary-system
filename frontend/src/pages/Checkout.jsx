@@ -38,7 +38,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="mesh-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div className="mesh-bg" style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         style={{ width: "100%", maxWidth: 460 }}>
 

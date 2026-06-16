@@ -44,7 +44,7 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg-primary)" }}>
+    <div style={{ width: "100%", minHeight: "100vh", display: "flex", background: "var(--bg-primary)" }}>
       {/* Left panel — premium mesh background + fuel scene */}
       <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
         className="mesh-bg"

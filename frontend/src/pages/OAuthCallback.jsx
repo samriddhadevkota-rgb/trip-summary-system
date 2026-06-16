@@ -33,7 +33,7 @@ export default function OAuthCallback() {
   }, [searchParams, navigate])
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
+    <div style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)" }}>
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}
         style={{ textAlign: "center", padding: 40, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--radius)", maxWidth: 340, boxShadow: "var(--shadow-lg)" }}>
 

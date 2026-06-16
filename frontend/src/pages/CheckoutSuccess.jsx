@@ -5,7 +5,7 @@ import { CheckCircle } from "lucide-react"
 export default function CheckoutSuccess() {
   const navigate = useNavigate()
   return (
-    <div className="mesh-bg" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+    <div className="mesh-bg" style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="glass" style={{ textAlign: "center", padding: 44, borderRadius: "var(--radius)", maxWidth: 380 }}>
         <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 0.5 }}

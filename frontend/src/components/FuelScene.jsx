@@ -35,12 +35,19 @@ export default function FuelScene() {
       <circle cx="160" cy="200" r="5" fill="#aab8af" opacity="0.6" />
       <circle cx="380" cy="60" r="8" fill="#d4af6a" />
 
-      {/* Moving truck dot along the path (native SVG animateMotion — works in Safari) */}
-      <circle r="7" fill="#ecfdf5" filter="url(#softGlow)">
+      {/* Truck silhouette traveling the route (native SVG animateMotion — works in Safari) */}
+      <g filter="url(#softGlow)">
+        <rect x="-15" y="-7" width="21" height="11" rx="1.5" fill="#f0cf8e" />
+        <path d="M6,-7 L14,-7 L17,-1.5 L17,4 L6,4 Z" fill="#d4af6a" />
+        <rect x="8" y="-5" width="5.5" height="4" rx="0.5" fill="#06120c" opacity="0.55" />
+        <circle cx="-8" cy="4.5" r="3.2" fill="#06120c" />
+        <circle cx="11" cy="4.5" r="3.2" fill="#06120c" />
+        <circle cx="-8" cy="4.5" r="1.2" fill="#5b6b60" />
+        <circle cx="11" cy="4.5" r="1.2" fill="#5b6b60" />
         <animateMotion
           path="M 40 320 Q 120 260 160 200 T 280 130 Q 330 100 380 60"
-          dur="3.5s" repeatCount="indefinite" />
-      </circle>
+          dur="3.5s" repeatCount="indefinite" rotate="auto" />
+      </g>
 
       {/* Fuel drop / gauge centerpiece */}
       <g transform="translate(210,230)">

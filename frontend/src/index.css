@@ -36,7 +36,7 @@
   --shadow-glow:   0 0 48px rgba(13,150,104,0.18);
   --gradient-premium: linear-gradient(135deg, #0d9668 0%, #0b7d57 55%, #065f43 100%);
   --gradient-gold: linear-gradient(135deg, #f0cf8e 0%, #d4af6a 50%, #a9803f 100%);
-  --gradient-mesh: radial-gradient(at 20% 0%, rgba(13,150,104,0.18) 0px, transparent 50%), radial-gradient(at 80% 10%, rgba(212,175,106,0.10) 0px, transparent 50%), radial-gradient(at 50% 100%, rgba(13,150,104,0.10) 0px, transparent 50%);
+  --gradient-mesh: radial-gradient(at 20% 0%, rgba(13,150,104,0.28) 0px, transparent 55%), radial-gradient(at 80% 15%, rgba(212,175,106,0.18) 0px, transparent 55%), radial-gradient(at 30% 100%, rgba(13,150,104,0.20) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(212,175,106,0.10) 0px, transparent 50%);
 }
 
 html { font-size: 15px; scroll-behavior: smooth; }
@@ -182,11 +182,29 @@ tbody tr:last-child td { border-bottom: none; }
 .premium-card:hover::before { opacity: 1; }
 .premium-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
-/* Noise/grain texture overlay for richness */
+/* Ambient animated mesh background for richness */
 .mesh-bg {
   position: relative;
   background-color: var(--bg-primary);
   background-image: var(--gradient-mesh);
+  background-size: 180% 180%;
+  animation: meshDrift 22s ease-in-out infinite alternate;
+}
+@keyframes meshDrift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 60%; }
+}
+
+/* Subtle moving highway-line accent for fuel/freight pages */
+.road-lines {
+  position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0.5;
+}
+.road-lines::before {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 8%;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--gold) 0 24px, transparent 24px 48px);
+  animation: drift 6s linear infinite;
 }
 
 /* ═══════════════════════════════════

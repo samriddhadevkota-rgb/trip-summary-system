@@ -34,7 +34,7 @@ export default function ResetPassword() {
 
   if (!token) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)", padding: 24 }}>
+      <div style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)", padding: 24 }}>
         <div style={{ textAlign: "center" }}>
           <AlertCircle size={40} color="#ef4444" style={{ margin: "0 auto 16px", display: "block" }} />
           <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>Invalid reset link.</p>
@@ -48,7 +48,7 @@ export default function ResetPassword() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)", padding: 24 }}>
+    <div style={{ width: "100%", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-primary)", padding: 24 }}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         style={{ width: "100%", maxWidth: 420, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 18, padding: 36 }}>
 
