@@ -201,7 +201,7 @@ function TruckScene({ phase, fuelPercent }) {
       animate={{ x: phase === PHASE.ENTER ? [0, -6, 0] : 0 }}
       transition={{ duration: 1.7 }}
     >
-      <svg viewBox="0 0 1000 380" width="100%" height="auto" role="img" aria-label="Truck driving to a fuel station">
+      <svg viewBox="0 0 1000 380" width="100%" style={{ height: "auto" }} role="img" aria-label="Truck driving to a fuel station">
         <defs>
           <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#0c0f0d" />

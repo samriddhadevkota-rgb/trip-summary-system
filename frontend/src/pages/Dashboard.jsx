@@ -40,13 +40,13 @@ export default function Dashboard() {
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["analytics"],
-    queryFn: () => fetch(API + "/analytics/stats", { headers: H() }).then(r => r.json()),
+    queryFn: () => fetch(API + "/analytics/stats", { headers: H() }).then(r => { if (!r.ok) throw new Error(r.status); return r.json() }),
     refetchInterval: 30000
   })
 
   const { data: trips = [], isLoading: tripsLoading } = useQuery({
     queryKey: ["trips", search, statusFilter],
-    queryFn: () => fetch(API + `/trips?search=${encodeURIComponent(search)}&status=${statusFilter}`, { headers: H() }).then(r => r.json()),
+    queryFn: () => fetch(API + `/trips?search=${encodeURIComponent(search)}&status=${statusFilter}`, { headers: H() }).then(r => { if (!r.ok) throw new Error(r.status); return r.json() }),
     keepPreviousData: true
   })
 
