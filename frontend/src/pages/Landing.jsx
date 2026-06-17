@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Leaf, BarChart3, FileText, Users, Zap, Shield, Clock, Check, ArrowRight } from "lucide-react"
 import FuelScene from "../components/FuelScene"
+import TripLoadingAnimation from "../components/TripLoadingAnimation"
 
 const FEATURES = [
   { icon: BarChart3, title: "Real-time Analytics", desc: "Revenue trends, trip stats, and customer insights on a beautiful dashboard.", color: "#34d399" },
@@ -30,6 +31,7 @@ export default function Landing() {
   }
 
   return (
+    <TripLoadingAnimation loading={false}>
     <div className="mesh-bg" style={{ minHeight: "100vh", overflowX: "hidden", width: "100%" }}>
 
       {/* Nav */}
@@ -176,5 +178,6 @@ export default function Landing() {
         <p style={{ color: "var(--text-muted)", fontSize: 13 }}>© 2026 TripSync. Built with FastAPI + React.</p>
       </footer>
     </div>
+    </TripLoadingAnimation>
   )
 }
